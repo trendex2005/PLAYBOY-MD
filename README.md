@@ -39,7 +39,7 @@
    
   1..DEPLOY ON HEROKU ⤵️
   
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://dashboard.heroku.com/new?template=https%3A%2F%2Fgithub.com%2Ftrendex2030%2FTREND-X) 
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://dashboard.heroku.com/new?template=https%3A%2F%2Fgithub.com%2Ftrendex2005%2FPLAYBOY-MD) 
    
    
   2..DEPLOY ON RENDER ⤵️
