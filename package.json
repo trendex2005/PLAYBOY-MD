@@ -4,7 +4,7 @@
   "description": "A WhatsApp Bot Created By trendex",
   "main": "index.js",
   "scripts": {
-    "start": "pm2 start index.js --deep-monitoring --attach --name TREND-X",
+    "start": "pm2-runtime index.js --name TREND-X",
   },
     "dependencies": {
     "@whiskeysockets/baileys": "git+https://gitlab.com/amilaKumara/baileys-pmd.git",
