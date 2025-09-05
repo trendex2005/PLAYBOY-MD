@@ -829,11 +829,3 @@ if (!isReact && config.CUSTOM_REACT === 'true') {
   connectToWA()
   }, 8000);
 
-// Anti-crash handler
-process.on("uncaughtException", (err) => {
-  console.error("[❗] Uncaught Exception:", err.stack || err);
-});
-
-process.on("unhandledRejection", (reason, p) => {
-  console.error("[❗] Unhandled Promise Rejection:", reason);
-});
