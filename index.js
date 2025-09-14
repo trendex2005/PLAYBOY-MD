@@ -1,3 +1,20 @@
+/**
+ * TREND-XMD WhatsApp Bot (Anti-Crash Version)
+ * Creator: trendex
+ * Improvements: auto-reconnect, error guards, keep-alive, safe plugins
+ */
+
+console.clear()
+console.log("🚀 Starting TREND-XMD...")
+
+// ============ GLOBAL ANTI-CRASH ============
+process.on("uncaughtException", (err) => {
+  console.error("❌ Uncaught Exception:", err)
+})
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("❌ Unhandled Rejection:", reason)
+})
+
 const {
   default: makeWASocket,
   useMultiFileAuthState,
