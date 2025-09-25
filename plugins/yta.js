@@ -1,62 +1,53 @@
 const config = require('../config');
 const { cmd } = require('../command');
-const { ytsearch, ytmp3, ytmp4 } = require('@dark-yasiya/yt-dl.js'); 
+const yts = require('yt-search');
 
 cmd({
-    pattern: "play3",
-    alias: ["audio2","song2","ytsong"],
-    react: "🎶",
-    desc: "Download Youtube song",
-    category: "main",
-    use: '.song < Yt url or Name >',
+    pattern: "yt2",
+    alias: ["play2", "music"],
+    react: "🎵",
+    desc: "Download audio from YouTube",
+    category: "download",
+    use: ".song <query or url>",
     filename: __filename
-},
-async(conn, mek, m,{ from, prefix, quoted, q, reply }) => {
-try {
-    if(!q) return await reply("Please give me Yt url or Name");
-    
-    const yt = await ytsearch(q);
-    if(yt.results.length < 1) return reply("Results not found!");
-    
-    let yts = yt.results[0];  
-    const ytdl = await ytmp3(yts.url);
-    
-    // Validate download URL
-    if(!ytdl?.download?.url) return reply("Error fetching audio URL");
-    
-    let ytmsg = `╭━━━〔 *TREND X* 〕━━━┈⊷
-┃▸┃๏ *MUSIC DOWNLOADER*
-╭━━❐━⪼
-┇๏ *Title* -  ${yts.title}
-┇๏ *Duration* - ${yts.timestamp}
-┇๏ *Views* -  ${yts.views}
-┇๏ *Author* -  ${yts.author.name} 
-┇๏ *Link* -  ${yts.url}
-╰━━❑━⪼
-> *© TREND-X ♡*`;
-    
-    // Send details with thumbnail
-    await conn.sendMessage(from, { 
-        image: { url: yts.thumbnail || yts.image || '' }, 
-        caption: ytmsg 
-    }, { quoted: mek });
-    
-    // Send as audio message
-    await conn.sendMessage(from, { 
-        audio: { url: ytdl.download.url }, 
-        mimetype: "audio/mpeg",
-        ptt: false
-    }, { quoted: mek });
-    
-    // Send as document
-    await conn.sendMessage(from, {
-        document: { url: ytdl.download.url },
-        mimetype: "audio/mpeg",
-        fileName: `${yts.title.replace(/[^a-zA-Z0-9]/g, '_')}.mp3`, // Sanitize filename
-        caption: `> *© Powered By TREND-X ♡*`
-    }, { quoted: mek });
-    
-} catch (e) {
-    console.error(e);
-    reply("Error processing request: " + e.message);
-}});
+}, async (conn, m, mek, { from, q, reply }) => {
+    try {
+        if (!q) return await reply("❌ Please provide a song name or YouTube URL!");
+
+        let videoUrl, title;
+        
+        // Check if it's a URL
+        if (q.match(/(youtube\.com|youtu\.be)/)) {
+            videoUrl = q;
+            const videoInfo = await yts({ videoId: q.split(/[=/]/).pop() });
+            title = videoInfo.title;
+        } else {
+            // Search YouTube
+            const search = await yts(q);
+            if (!search.videos.length) return await reply("❌ No results found!");
+            videoUrl = search.videos[0].url;
+            title = search.videos[0].title;
+        }
+
+        await reply("⏳ Downloading audio...");
+
+        // Use API to get audio
+        const apiUrl = `https://apis.davidcyriltech.my.id/download/ytmp3?url=${encodeURIComponent(videoUrl)}`;
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        if (!data.success) return await reply("❌ Failed to download audio!");
+
+        await conn.sendMessage(from, {
+            audio: { url: data.result.download_url },
+            mimetype: 'audio/mpeg',
+            ptt: false
+        }, { quoted: mek });
+
+        await reply(`✅ *${title}* downloaded successfully!`);
+
+    } catch (error) {
+        console.error(error);
+        await reply(`❌ Error: ${error.message}`);
+    }
+});
