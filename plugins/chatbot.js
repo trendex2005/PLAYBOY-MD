@@ -36,21 +36,9 @@ const getContextInfo = (title, url, thumb) => ({
   }
 });
 
-const customReplies = (q) => {
-  const lower = q.toLowerCase();
-  const today = moment().tz("Africa/Nairobi");
-  if (lower.includes("trend-x")) return "🔥 TREND-X is a Multi-Device WhatsApp Bot made by *Caseyrhodes*.";
-  if (lower.includes("trendex")) return "👑TREND-X is the official creator of the *trendex* WhatsApp bot.";
-  if (lower.includes("channel")) return "📢 Official channel: https://whatsapp.com/channel/0029Vb6b7ZdF6sn4Vmjf2X1O";
-  if (lower.includes("repo") || lower.includes("github")) return "🔗 GitHub repo: https://github.com/trendex2030/TREND-X";
-  if (lower.includes("date") || lower.includes("today")) return `📅 Today is ${today.format("dddd, MMMM Do YYYY")}`;
-  if (lower.includes("day")) return `📆 Today is *${today.format("dddd")}*`;
-  return null;
-};
-
 // === TOGGLE COMMAND ===
 cmd({
-  pattern: "chatbot",
+  pattern: "cbot",
   alias: ["chatbase", "cb"],
   desc: "Toggle Chatbase chatbot (private only)",
   category: "ai",
@@ -76,9 +64,9 @@ async (conn, mek, m, { q, reply }) => {
   }
 });
 
-// === AUTO REPLY WHEN ENABLED ===
+// === HOOK: LISTEN TO ALL PRIVATE MESSAGES ===
 cmd({
-  pattern: "chatbot",
+  on: "message", // special hook to catch every message
   dontAddCommandList: true
 },
 async (conn, mek, m, { q, reply }) => {
@@ -87,9 +75,6 @@ async (conn, mek, m, { q, reply }) => {
   if (!q) return;
 
   try {
-    const fixed = customReplies(q);
-    if (fixed) return await conn.sendMessage(m.chat, { text: fixed, contextInfo: getContextInfo("Chatbase Reply") }, { quoted: fakeContact });
-
     const res = await axios.post(
       "https://www.chatbase.co/api/v1/chat",
       {
