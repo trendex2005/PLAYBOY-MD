@@ -32,7 +32,7 @@ cmd({
         await reply("⏳ Downloading audio...");
 
         // Use API to get audio
-        const apiUrl = `https://api.platform.web.id/docs/#/Downloader/get_savetube${encodeURIComponent(videoUrl)}`;
+        const apiUrl = `https://apis-keith.vercel.app/download/dlmp3?url=${encodeURIComponent(videoUrl)}`;
         const response = await fetch(apiUrl);
         const data = await response.json();
 
