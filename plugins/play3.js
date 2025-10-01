@@ -20,7 +20,7 @@ cmd({
         if (yt.results.length < 1) return reply("No results found!");
         
         let yts = yt.results[0];  
-        let apiUrl = `https://api.giftedtech.web.id/api/download/ytmp4?apikey=gifted&url=https%3A%2F%2Fyoutu.be%2FwdJrTQJh1ZQ%3Ffeature%3Dshared${encodeURIComponent(yts.url)}`;
+        let apiUrl = `https://api.giftedtech.web.id/api/download/ytmp4?apikey=gifted&url=${encodeURIComponent(yts.url)}`;
         
         let response = await fetch(apiUrl);
         let data = await response.json();
