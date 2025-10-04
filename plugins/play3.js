@@ -1,4 +1,4 @@
-const { cdm } = require('../command');
+const { franceking } = require('../main');
 const axios = require('axios');
 const yts = require('yt-search');
 
@@ -6,11 +6,11 @@ const BASE_URL = 'https://noobs-api.top';
 
 module.exports = [
   {
-  name: 'trend',
+  name: 'play',
   get flashOnly() {
     return franceking();
   },
-  aliases: ['trend'],
+  aliases: ['music'],
   description: 'Search and play MP3 music from YouTube (audio only).',
   category: 'Search',
   execute: async (king, msg, args) => {
