@@ -1,4 +1,4 @@
-const { franceking } = require('../main');
+const { cdm } = require('../command');
 const axios = require('axios');
 const yts = require('yt-search');
 
