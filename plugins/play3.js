@@ -1,5 +1,5 @@
-const { franceking } = require('../main');
-const axios = require('axios');
+const config = require('../config');
+const { cmd } = require('../command');
 const yts = require('yt-search');
 
 const BASE_URL = 'https://noobs-api.top';
