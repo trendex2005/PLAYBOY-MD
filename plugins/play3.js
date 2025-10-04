@@ -1,7 +1,7 @@
 const config = require('../config');
 const { cmd } = require('../command');
 const { ytsearch } = require('@dark-yasiya/yt-dl.js');
-
+const BASE_URL = 'https://noobs-api.top';
 // MP4 video download
 // MP4 video download with options
 cmd({ 
@@ -120,7 +120,7 @@ cmd({
         if (yt.results.length < 1) return reply("No results found!");
         
         let yts = yt.results[0];  
-        let apiUrl = `https://apis.davidcyriltech.my.id/play?query=Faded&apikey=${encodeURIComponent(yts.url)}`;
+        let apiUrl = `${BASE_URL}/dipto/ytDl3?link=${encodeURIComponent(yts.url)}`;
         
         let response = await fetch(apiUrl);
         let data = await response.json();
