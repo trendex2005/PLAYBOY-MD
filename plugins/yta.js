@@ -32,7 +32,7 @@ cmd({
         await reply("⏳ Downloading audio...");
 
         // Use API to get audio
-        const apiUrl = `https://api.giftedtech.web.id/api/download/ytmusic?apikey=gifted&quality=128kbps&url=${encodeURIComponent(videoUrl)}`;
+        const apiUrl = `https://apis.davidcyriltech.my.id/download/ytmp3?url=https://youtube.com/watch?v=M0wpMEbgC7DA&apikey=${encodeURIComponent(videoUrl)}`;
         const response = await fetch(apiUrl);
         const data = await response.json();
 
