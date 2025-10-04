@@ -32,7 +32,7 @@ cmd({
         await reply("⏳ Downloading audio...");
 
         // Use API to get audio
-        const apiUrl = `https://apis.davidcyriltech.my.id/play?query=${encodeURIComponent(videoUrl)}`;
+        const apiUrl = `https://youtube.com/watch?v=${encodeURIComponent(videoUrl)}`;
         const response = await fetch(apiUrl);
         const data = await response.json();
 
