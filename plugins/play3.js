@@ -1,209 +1,264 @@
-const config = require('../config');
-const { cmd } = require('../command');
-const { ytsearch } = require('@dark-yasiya/yt-dl.js');
+const { franceking } = require('../main');
+const axios = require('axios');
+const yts = require('yt-search');
+
 const BASE_URL = 'https://noobs-api.top';
-// MP4 video download
-// MP4 video download with options
-cmd({ 
-    pattern: "mp4", 
-    alias: ["videos"], 
-    react: "🎥", 
-    desc: "Download YouTube video", 
-    category: "main", 
-    use: '.mp4 < Yt url or Name >', 
-    filename: __filename 
-}, async (conn, mek, m, { from, prefix, quoted, q, reply }) => { 
-    try { 
-        if (!q) return await reply("Please provide a YouTube URL or song name.");
-        
-        const yt = await ytsearch(q);
-        if (yt.results.length < 1) return reply("No results found!");
-        
-        let yts = yt.results[0];  
-        let apiUrl = `https://api.dreaded.site/api/ytdl/video?url=https://youtube.com/watch?v=zvpo0STisUI${encodeURIComponent(yts.url)}`;
-        
-        let response = await fetch(apiUrl);
-        let data = await response.json();
-        
-        if (data.status !== 200 || !data.success || !data.result.download_url) {
-            return reply("Failed to fetch the video. Please try again later.");
+
+module.exports = [
+  {
+  name: 'play',
+  get flashOnly() {
+    return franceking();
+  },
+  aliases: ['music'],
+  description: 'Search and play MP3 music from YouTube (audio only).',
+  category: 'Search',
+  execute: async (king, msg, args) => {
+    const fromJid = msg.key.remoteJid;
+    const query = args.join(' ');
+
+    if (!query) {
+      return king.sendMessage(fromJid, {
+        text: 'Please provide a song name or keyword.'
+      }, { quoted: msg });
+    }
+
+    try {
+      console.log('[PLAY] Searching YT for:', query);
+      const search = await yts(query);
+      const video = search.videos[0];
+
+      if (!video) {
+        return king.sendMessage(fromJid, {
+          text: 'No results found for your query.'
+        }, { quoted: msg });
+      }
+
+      const safeTitle = video.title.replace(/[\\/:*?"<>|]/g, '');
+      const fileName = `${safeTitle}.mp3`;
+      const apiURL = `${BASE_URL}/dipto/ytDl3?link=${encodeURIComponent(video.videoId)}&format=mp3`;
+
+      const response = await axios.get(apiURL);
+      const data = response.data;
+
+      if (!data.downloadLink) {
+        return king.sendMessage(fromJid, {
+          text: 'Failed to retrieve the MP3 download link.'
+        }, { quoted: msg });
+      }
+
+      const message = {
+        image: { url: video.thumbnail },
+        caption:
+          `*FLASH-MD SONG PLAYER*\n\n` +
+          `╭───────────────◆\n` +
+          `│⿻ *Title:* ${video.title}\n` +
+          `│⿻ *Duration:* ${video.timestamp}\n` +
+          `│⿻ *Views:* ${video.views.toLocaleString()}\n` +
+          `│⿻ *Uploaded:* ${video.ago}\n` +
+          `│⿻ *Channel:* ${video.author.name}\n` +
+          `╰────────────────◆\n\n` +
+          `🔗 ${video.url}`,
+        contextInfo: {
+          forwardingScore: 1,
+          isForwarded: true,
+          forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363238139244263@newsletter',
+            newsletterName: 'FLASH-MD',
+            serverMessageId: -1
+          }
+        }
+      };
+
+      await king.sendMessage(fromJid, message, { quoted: msg });
+
+      await king.sendMessage(fromJid, {
+        audio: { url: data.downloadLink },
+        mimetype: 'audio/mpeg',
+        fileName,
+        contextInfo: {
+          forwardingScore: 1,
+          isForwarded: true,
+          forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363238139244263@newsletter',
+            newsletterName: 'FLASH-MD',
+            serverMessageId: -1
+          }
+        },
+        caption: 'FLASH-MD V2'
+      }, { quoted: msg });
+
+    } catch (err) {
+      console.error('[PLAY] Error:', err);
+      await king.sendMessage(fromJid, {
+        text: 'An error occurred while processing your request.'
+      }, { quoted: msg });
+    }
+  }
+}, 
+  {
+    name: 'song',
+    get flashOnly() {
+      return franceking();
+    },
+    aliases: ['audiofile', 'mp3doc'],
+    description: 'Search and send MP3 music as document from YouTube.',
+    category: 'Search',
+    execute: async (king, msg, args) => {
+      const fromJid = msg.key.remoteJid;
+      const query = args.join(' ');
+
+      if (!query) {
+        return king.sendMessage(fromJid, {
+          text: 'Please provide a song name or keyword.'
+        }, { quoted: msg });
+      }
+
+      try {
+        console.log('[SONG] Searching YT for:', query);
+        const search = await yts(query);
+        const video = search.videos[0];
+
+        if (!video) {
+          return king.sendMessage(fromJid, {
+            text: 'No results found for your query.'
+          }, { quoted: msg });
         }
 
-        let ytmsg = `📹 *Video Details*
-🎬 *Title:* ${yts.title}
-⏳ *Duration:* ${yts.timestamp}
-👀 *Views:* ${yts.views}
-👤 *Author:* ${yts.author.name}
-🔗 *Link:* ${yts.url}
+        const safeTitle = video.title.replace(/[\\/:*?"<>|]/g, '');
+        const fileName = `${safeTitle}.mp3`;
+        const apiURL = `${BASE_URL}/dipto/ytDl3?link=${encodeURIComponent(video.videoId)}&format=mp3`;
 
-*Choose download format:*
-1. 📄 Document (no preview)
-2. ▶️ Normal Video (with preview)
+        const response = await axios.get(apiURL);
+        const data = response.data;
 
-_Reply to this message with 1 or 2 to download._`;
-
-        let contextInfo = {
-            mentionedJid: [m.sender],
-            forwardingScore: 999,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363401765045963@newsletter',
-                newsletterName: 'TREND-X',
-                serverMessageId: 143
-            }
-        };
-
-        // Send thumbnail with options
-        const videoMsg = await conn.sendMessage(from, { image: { url: yts.thumbnail }, caption: ytmsg, contextInfo }, { quoted: mek });
-
-        conn.ev.on("messages.upsert", async (msgUpdate) => {
-            const replyMsg = msgUpdate.messages[0];
-            if (!replyMsg.message || !replyMsg.message.extendedTextMessage) return;
-
-            const selected = replyMsg.message.extendedTextMessage.text.trim();
-
-            if (
-                replyMsg.message.extendedTextMessage.contextInfo &&
-                replyMsg.message.extendedTextMessage.contextInfo.stanzaId === videoMsg.key.id
-            ) {
-                await conn.sendMessage(from, { react: { text: "⬇️", key: replyMsg.key } });
-
-                switch (selected) {
-                    case "1":
-                        await conn.sendMessage(from, {
-                            document: { url: data.result.download_url },
-                            mimetype: "video/mp4",
-                            fileName: `${yts.title}.mp4`,
-                            contextInfo
-                        }, { quoted: replyMsg });
-                        break;
-
-                    case "2":
-                        await conn.sendMessage(from, {
-                            video: { url: data.result.download_url },
-                            mimetype: "video/mp4",
-                            contextInfo
-                        }, { quoted: replyMsg });
-                        break;
-
-                    default:
-                        await conn.sendMessage(
-                            from,
-                            { text: "*Please Reply with ( 1 , 2 or 3) ❤️" },
-                            { quoted: replyMsg }
-                        );
-                        break;
-                }
-            }
-        });
-
-    } catch (e) {
-        console.log(e);
-        reply("An error occurred. Please try again later.");
-    }
-});
-
-// MP3 song download
-cmd({ 
-    pattern: "song", 
-    alias: ["ytdl3", "play"], 
-    react: "🎶", 
-    desc: "Download YouTube song", 
-    category: "main", 
-    use: '.song < Yt url or Name >', 
-    filename: __filename 
-}, async (conn, mek, m, { from, prefix, quoted, q, reply }) => { 
-    try { 
-        if (!q) return await reply("Please provide a YouTube URL or song name.");
-        
-        const yt = await ytsearch(q);
-        if (yt.results.length < 1) return reply("No results found!");
-        
-        let yts = yt.results[0];  
-        let apiUrl = `${BASE_URL}/dipto/ytDl3?link=${encodeURIComponent(yts.url)}`;
-        
-        let response = await fetch(apiUrl);
-        let data = await response.json();
-        
-        if (data.status !== 200 || !data.success || !data.result.downloadUrl) {
-            return reply("Failed to fetch the audio. Please try again later.");
+        if (!data.downloadLink) {
+          return king.sendMessage(fromJid, {
+            text: 'Failed to retrieve the MP3 download link.'
+          }, { quoted: msg });
         }
-        
-        let ytmsg = `🎵 *Song Details*
-🎶 *Title:* ${yts.title}
-⏳ *Duration:* ${yts.timestamp}
-👀 *Views:* ${yts.views}
-👤 *Author:* ${yts.author.name}
-🔗 *Link:* ${yts.url}
 
-*Choose download format:*
-1. 📄 MP3 as Document
-2. 🎧 MP3 as Audio (Play)
-3. 🎙️ MP3 as Voice Note (PTT)
-
-_Reply with 1, 2 or 3 to this message to download the format you prefer._`;
-        
-        let contextInfo = {
-            mentionedJid: [m.sender],
-            forwardingScore: 999,
+        const message = {
+          image: { url: video.thumbnail },
+          caption:
+            `*FLASH-MD SONG PLAYER*\n\n` +
+            `╭───────────────◆\n` +
+            `│⿻ *Title:* ${video.title}\n` +
+            `│⿻ *Duration:* ${video.timestamp}\n` +
+            `│⿻ *Views:* ${video.views.toLocaleString()}\n` +
+            `│⿻ *Uploaded:* ${video.ago}\n` +
+            `│⿻ *Channel:* ${video.author.name}\n` +
+            `╰────────────────◆\n\n` +
+            `🔗 ${video.url}`,
+          contextInfo: {
+            forwardingScore: 1,
             isForwarded: true,
             forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363401765045963@newsletter',
-                newsletterName: 'TREND-X -TECH',
-                serverMessageId: 143
+              newsletterJid: '120363238139244263@newsletter',
+              newsletterName: 'FLASH-MD',
+              serverMessageId: -1
             }
+          }
         };
-        
-        // Send thumbnail with caption only
-  const songmsg = await conn.sendMessage(from, { image: { url: yts.thumbnail }, caption: ytmsg, contextInfo }, { quoted: mek });
 
-  
-     
-                     conn.ev.on("messages.upsert", async (msgUpdate) => {
-        
+        await king.sendMessage(fromJid, message, { quoted: msg });
 
-                const mp3msg = msgUpdate.messages[0];
-                if (!mp3msg.message || !mp3msg.message.extendedTextMessage) return;
+        await king.sendMessage(fromJid, {
+          document: { url: data.downloadLink },
+          mimetype: 'audio/mpeg',
+          fileName,
+          caption: '*FLASH-MD V2*'
+        }, { quoted: msg });
 
-                const selectedOption = mp3msg.message.extendedTextMessage.text.trim();
-
-                if (
-                    mp3msg.message.extendedTextMessage.contextInfo &&
-                    mp3msg.message.extendedTextMessage.contextInfo.stanzaId === songmsg.key.id
-                ) {
-                
-                            
-                   await conn.sendMessage(from, { react: { text: "⬇️", key: mp3msg.key } });
-
-                    switch (selectedOption) {
-case "1":   
-
-      
-      
-   await conn.sendMessage(from, { document: { url: data.result.downloadUrl }, mimetype: "audio/mpeg", fileName: `${yts.title}.mp3`, contextInfo }, { quoted: mp3msg });   
-      
-      
-break;
-case "2":   
-await conn.sendMessage(from, { audio: { url: data.result.downloadUrl }, mimetype: "audio/mpeg", contextInfo }, { quoted: mp3msg });
-break;
-case "3":   
-await conn.sendMessage(from, { audio: { url: data.result.downloadUrl }, mimetype: "audio/mpeg", ptt: true, contextInfo }, { quoted: mp3msg });
-break;
-
-
-default:
-                            await conn.sendMessage(
-                                from,
-                                {
-                                    text: "*invalid selection please select between ( 1 or 2 or 3) 🔴*",
-                                },
-                                { quoted: mp3msg }
-                            );
-             }}});
-           
-    } catch (e) {
-        console.log(e);
-        reply("An error occurred. Please try again later.");
+      } catch (err) {
+        console.error('[SONG] Error:', err);
+        await king.sendMessage(fromJid, {
+          text: 'An error occurred while processing your request.'
+        }, { quoted: msg });
+      }
     }
-});
+  },
+
+  {
+    name: 'video',
+    get flashOnly() {
+      return franceking();
+    },
+    aliases: ['vid', 'mp4', 'movie'],
+    description: 'Search and send video from YouTube as MP4.',
+    category: 'Search',
+    execute: async (king, msg, args) => {
+      const fromJid = msg.key.remoteJid;
+      const query = args.join(' ');
+
+      if (!query) {
+        return king.sendMessage(fromJid, {
+          text: 'Please provide a video name or keyword.'
+        }, { quoted: msg });
+      }
+
+      try {
+        console.log('[VIDEO] Searching YT for:', query);
+        const search = await yts(query);
+        const video = search.videos[0];
+
+        if (!video) {
+          return king.sendMessage(fromJid, {
+            text: 'No results found for your query.'
+          }, { quoted: msg });
+        }
+
+        const safeTitle = video.title.replace(/[\\/:*?"<>|]/g, '');
+        const fileName = `${safeTitle}.mp4`;
+        const apiURL = `${BASE_URL}/dipto/ytDl3?link=${encodeURIComponent(video.videoId)}&format=mp4`;
+
+        const response = await axios.get(apiURL);
+        const data = response.data;
+
+        if (!data.downloadLink) {
+          return king.sendMessage(fromJid, {
+            text: 'Failed to retrieve the MP4 download link.'
+          }, { quoted: msg });
+        }
+
+        const message = {
+          image: { url: video.thumbnail },
+          caption:
+            `*FLASH-MD VIDEO PLAYER*\n\n` +
+            `╭───────────────◆\n` +
+            `│⿻ *Title:* ${video.title}\n` +
+            `│⿻ *Duration:* ${video.timestamp}\n` +
+            `│⿻ *Views:* ${video.views.toLocaleString()}\n` +
+            `│⿻ *Uploaded:* ${video.ago}\n` +
+            `│⿻ *Channel:* ${video.author.name}\n` +
+            `╰────────────────◆\n\n` +
+            `🔗 ${video.url}`,
+          contextInfo: {
+            forwardingScore: 1,
+            isForwarded: true,
+            forwardedNewsletterMessageInfo: {
+              newsletterJid: '120363238139244263@newsletter',
+              newsletterName: 'FLASH-MD',
+              serverMessageId: -1
+            }
+          }
+        };
+
+        await king.sendMessage(fromJid, message, { quoted: msg });
+
+        await king.sendMessage(fromJid, {
+  video: { url: data.downloadLink },
+  mimetype: 'video/mp4',
+  fileName,
+  caption: '*FLASH-MD V2*'
+}, { quoted: msg });
+        
+      } catch (err) {
+        console.error('[VIDEO] Error:', err);
+        await king.sendMessage(fromJid, {
+          text: 'An error occurred while processing your request.'
+        }, { quoted: msg });
+      }
+    }
+  }
+];
