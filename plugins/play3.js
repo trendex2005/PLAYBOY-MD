@@ -1,54 +1,56 @@
-const config = require('../config');
-const { cmd } = require('../command');
 const yts = require('yt-search');
+const axios = require('axios');
 
-cmd({
-    pattern: "yt2",
-    alias: ["play2", "music"],
-    react: "🎵",
-    desc: "Download audio from YouTube",
-    category: "download",
-    use: ".song <query or url>",
-    filename: __filename
-}, async (conn, m, mek, { from, q, reply }) => {
+async function playCommand(sock, chatId, message) {
     try {
-        if (!q) return await reply("❌ Please provide a song name or YouTube URL!");
-
-        let videoUrl, title;
+        const text = message.message?.conversation || message.message?.extendedTextMessage?.text;
+        const searchQuery = text.split(' ').slice(1).join(' ').trim();
         
-        // Check if it's a URL
-        if (q.match(/(youtube\.com|youtu\.be)/)) {
-            videoUrl = q;
-            const videoInfo = await yts({ videoId: q.split(/[=/]/).pop() });
-            title = videoInfo.title;
-        } else {
-            // Search YouTube
-            const search = await yts(q);
-            if (!search.videos.length) return await reply("❌ No results found!");
-            videoUrl = search.videos[0].url;
-            title = search.videos[0].title;
+        if (!searchQuery) {
+            return await sock.sendMessage(chatId, { 
+                text: "What song do you want to download?"
+            });
         }
 
-        await reply("⏳ Downloading audio...");
+        // Search for the song
+        const { videos } = await yts(searchQuery);
+        if (!videos || videos.length === 0) {
+            return await sock.sendMessage(chatId, { 
+                text: "No songs found!"
+            });
+        }
 
-        // Use API to get audio
-              const response = await axios.get(`https://apis-keith.vercel.app/download/dlmp3?url=${urlYt}`);
-        const response = await fetch(apiUrl);
-        const data = await response.json();
+        // Send loading message
+        await sock.sendMessage(chatId, {
+            text: "_Please wait your download is in progress_"
+        });
 
-        if (!data.success) return await reply("❌ Failed to download audio!");
+        // Get the first video result
+        const video = videos[0];
+        const urlYt = video.url;
 
-        await conn.sendMessage(from, {
-            audio: { url: data.result.download_url },
-            mimetype: 'audio/mpeg',
-            ptt: false
-        }, { quoted: mek });
+        // Fetch audio data from API
+        const response = await axios.get(`https://apis-keith.vercel.app/download/dlmp3?url=${urlYt}`);
+        const data = response.data;
 
-        await reply(`✅ *${title}* downloaded successfully!`);
+        if (!data || !data.status || !data.result || !data.result.downloadUrl) {
+            return await sock.sendMessage(chatId, { 
+                text: "Failed to fetch audio from the API. Please try again later."
+            });
+        }
+
+        const audioUrl = data.result.downloadUrl;
+        const title = data.result.title;
+
+        // Send the audio
+        await sock.sendMessage(chatId, {
+            audio: { url: audioUrl },
+            mimetype: "audio/mpeg",
+            fileName: `${title}.mp3`
+        }, { quoted: message });
 
     } catch (error) {
-        console.error(error);
-        await reply(`❌ Error: ${error.message}`);
-    }
-});
-
+        console.error('Error in song2 command:', error);
+        await sock.sendMessage(chatId, { 
+            text: "Download failed. Please try again later."
+        });
