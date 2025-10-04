@@ -6,11 +6,11 @@ const BASE_URL = 'https://noobs-api.top';
 
 module.exports = [
   {
-  name: 'play',
+  name: 'trend',
   get flashOnly() {
     return franceking();
   },
-  aliases: ['music'],
+  aliases: ['trend'],
   description: 'Search and play MP3 music from YouTube (audio only).',
   category: 'Search',
   execute: async (king, msg, args) => {
