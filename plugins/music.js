@@ -1,4 +1,4 @@
-const { ezra } = require('../fredi/ezra');
+const { cmd } = require('../command');
 const axios = require('axios');
 const ytSearch = require('yt-search');
 
