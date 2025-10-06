@@ -32,7 +32,7 @@ cmd({
         await reply("⏳ Downloading audio...");
 
         // Use API to get audio
-        const apiUrl = `https://api.privatezia.biz.id/api/downloader/ytplaymp3?query=${encodeURIComponent(videoUrl)}`;
+        const apiUrl = `https://yt-dl.officialhectormanuel.workers.dev/?url=${encodeURIComponent(videoUrl)}`;
         const response = await fetch(apiUrl);
         const data = await response.json();
 
