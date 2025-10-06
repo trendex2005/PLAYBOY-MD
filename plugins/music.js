@@ -55,7 +55,7 @@ cmd(
             `🎵 *Title:* ${title}\n` +
             `⏱ *Duration:* ${duration}\n` +
             `📺 *YouTube:* ${result.videoUrl || "Unknown"}\n\n` +
-            `🔥 Brought to you by *NovaCore AI*`,
+            `🔥 Brought to you by *TRENDEX AI*`,
         },
         { quoted: mek }
       );
