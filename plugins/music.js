@@ -51,7 +51,7 @@ cmd(
         {
           image: { url: thumbnail },
           caption:
-            `🎶 *Now Playing* — NovaCore AI\n\n` +
+            `🎶 *Now Playing* — TREND-X AI\n\n` +
             `🎵 *Title:* ${title}\n` +
             `⏱ *Duration:* ${duration}\n` +
             `📺 *YouTube:* ${result.videoUrl || "Unknown"}\n\n` +
