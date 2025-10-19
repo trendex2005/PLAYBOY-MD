@@ -1,4 +1,4 @@
-const { cmd } = require('../command');
+const { cmd } = require('../command');;
 
 cmd({
     pattern: "add",
@@ -9,75 +9,42 @@ cmd({
     filename: __filename
 },
 async (conn, mek, m, {
-    from, q, isGroup, isBotAdmins, reply, quoted, senderNumber
+    from, isGroup, isBotAdmins, reply, quoted, senderNumber, args
 }) => {
-    // Create newsletter-style message function
-    const sendNewsletterMessage = async (text, mentions = []) => {
-        return conn.sendMessage(from, { 
-            text: text,
-            contextInfo: {
-                mentionedJid: mentions,
-                forwardingScore: 999,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363401765045963@newsletter',
-                    newsletterName: 'TREND-X 𝐓𝐄𝐂𝐇',
-                    serverMessageId: 143
-                }
-            }
-        }, { quoted: mek });
-    };
 
-    // Check if the command is used in a group
-    if (!isGroup) {
-        return sendNewsletterMessage("❌ This command can only be used in groups.");
-    }
+    // Must be in group
+    if (!isGroup) return reply("❌ This command can only be used in groups.");
 
-    // Get the bot owner's number dynamically from conn.user.id
+    // Owner-only control
     const botOwner = conn.user.id.split(":")[0];
-    if (senderNumber !== botOwner) {
-        return sendNewsletterMessage("❌ Only the bot owner can use this command.");
-    }
+    if (senderNumber !== botOwner) return reply("❌ Only the bot owner can use this command.");
 
-    // Check if the bot is an admin
-    if (!isBotAdmins) {
-        return sendNewsletterMessage("❌ I need to be an admin to use this command.");
-    }
+    // Bot must be admin
+    if (!isBotAdmins) return reply("❌ I need to be an admin to add members.");
 
     let number;
-    if (m.quoted) {
-        number = m.quoted.sender.split("@")[0];
-    } else if (q && q.includes("@")) {
-        number = q.replace(/[@\s]/g, '');
-    } else if (q && /^\d+$/.test(q)) {
-        number = q;
+
+    // Extract number from quoted, mention, or args
+    if (quoted) {
+        number = quoted.sender.split("@")[0];
+    } else if (m.mentionedJid?.length) {
+        number = m.mentionedJid[0].split("@")[0];
+    } else if (args[0] && /^\d{5,16}$/.test(args[0])) {
+        number = args[0];
     } else {
-        return sendNewsletterMessage("❌ Please reply to a message, mention a user, or provide a number to add.");
+        return reply("❌ Provide a valid number, mention a user, or reply to a message.");
     }
 
     const jid = number + "@s.whatsapp.net";
 
     try {
         await conn.groupParticipantsUpdate(from, [jid], "add");
-        
-        // Success message with image and newsletter style
-        await conn.sendMessage(from, { 
-            image: { url: 'https://files.catbox.moe/adymbp.jpg' },
-            caption: `✅ Successfully added @${number}\n\n_Action performed by bot owner_`,
-            contextInfo: {
-                mentionedJid: [jid],
-                forwardingScore: 999,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363401765045963@newsletter',
-                    newsletterName: 'TREND 𝐓𝐄𝐂𝐇',
-                    serverMessageId: 143
-                }
-            }
+        await conn.sendMessage(from, {
+            text: `✅ Successfully added @${number}`,
+            mentions: [jid]
         }, { quoted: mek });
-        
-    } catch (error) {
-        console.error("Add command error:", error);
-        await sendNewsletterMessage("❌ Failed to add the member. Error: " + error.message);
+    } catch (err) {
+        console.error("❌ Add Error:", err);
+        reply("❌ Failed to add member. They may have privacy settings or the group is full.");
     }
 });
