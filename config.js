@@ -24,8 +24,11 @@ ANTI_DEL_PATH: process.env.ANTI_DEL_PATH || "inbox",
 WELCOME: process.env.WELCOME || "false",
 // true if want welcome and goodbye msg in groups    
 ADMIN_EVENTS: process.env.ADMIN_EVENTS || "true",
-// make true to know who dismiss or promoted a member in group
-ANTI_LINK: process.env.ANTI_LINK || "true",
+// make true to know who dismiss or promoted a member in group. 
+ LINK_WHITELIST: "youtube.com,github.com", 
+    LINK_ACTION:  "mute", // "kick", "mute", or "none"
+    LINK_WARN_LIMIT: 3, // Number of warnings before action
+ANTI_LINK: process.env.ANTI_LINK || "false",
 // make anti link true,false for groups 
 MENTION_REPLY: process.env.MENTION_REPLY || "false",
 // make true if want auto voice reply if someone menetion you 
@@ -35,7 +38,7 @@ PREFIX: process.env.PREFIX || ".",
     
     AUTO_BIO: process.env.AUTO_BIO || "true",// Replace with your authorized numbers
     
-    // Timezone for the auto-bio feature
+  // Timezone for the auto-bio feature
     TIME_ZONE: process.env.TIME_ZONE || "Asia/Kolkata",  // Change to your preferred timezone
 // add your prifix for bot   
 BOT_NAME: process.env.BOT_NAME || "TREND-X",
