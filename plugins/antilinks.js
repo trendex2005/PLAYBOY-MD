@@ -27,34 +27,35 @@ const linkPatterns = [
 ];
 
 cmd({
-  'on': "body"
-}, async (conn, m, store, {
-  from,
-  body,
-  sender,
-  isGroup,
-  isAdmins,
-  isBotAdmins,
-  reply
-}) => {
+    on: "body"
+}, async (conn, m, store, { from, body, sender, isGroup, isAdmins, isBotAdmins, reply }) => {
   try {
-    if (!isGroup || isAdmins || !isBotAdmins) {
+    if (!isGroup || isAdmins || !isBotAdmins || sender === conn.user?.id) return;
+
+    const text = body.toLowerCase();
+    const hasBadWord = config.ANTI_BAD_WORD === "true" && badWords.some(word => text.includes(word));
+    const hasLink = config.ANTI_LINK === "true" && linkPatterns.some(pattern => pattern.test(body));
+
+    if (hasBadWord) {
+      await conn.sendMessage(from, { delete: m.key });
+      await conn.sendMessage(from, {
+        text: `🚫 *Bad language is not allowed!*\n@${sender.split('@')[0]}`,
+        mentions: [sender]
+      }, { quoted: m });
       return;
     }
 
-    const containsLink = linkPatterns.some(pattern => pattern.test(body));
-
-    if (containsLink && config.ANTI_LINK_KICK === 'true') {
-      await conn.sendMessage(from, { 'delete': m.key }, { 'quoted': m });
+    if (hasLink) {
+      await conn.sendMessage(from, { delete: m.key });
       await conn.sendMessage(from, {
-        'text': `⚠️ Links are not allowed in this group.\n@${sender.split('@')[0]} has been removed. 🚫`,
-        'mentions': [sender]
-      }, { 'quoted': m });
+        text: `⚠️ *Links are not allowed in this group!*\n@${sender.split('@')[0]} has been removed.`,
+        mentions: [sender]
+      }, { quoted: m });
 
       await conn.groupParticipantsUpdate(from, [sender], "remove");
     }
   } catch (error) {
     console.error(error);
-    reply("An error occurred while processing the message.");
+    reply("❌ Error while processing message.");
   }
 });
