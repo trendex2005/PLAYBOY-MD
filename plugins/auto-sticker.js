@@ -3,28 +3,30 @@ const config = require('../config');
 const { cmd } = require('../command');
 
 cmd({
-  on: 'body'
-}, async (conn, mek, m, { from, body }) => {
-  try {
-    const jsonUrl = 'https://raw.githubusercontent.com/XdTechPro/KHAN-DATA/main/autosticker.json';
-    const res = await axios.get(jsonUrl);
-    const data = res.data;
+on: "body"
+},
+async (conn, mek, m, { from, body }) => {
+    const filePath = path.join(__dirname, '../all/autosticker.json');
+    const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 
-    for (const keyword in data) {
-      if (body.toLowerCase() === keyword.toLowerCase()) {
-        if (config.AUTO_STICKER === 'true') {
-          await conn.sendMessage(
-            from,
-            {
-              sticker: { url: data[keyword] },
-              package: 'TREND-X'
-            },
-            { quoted: mek }
-          );
+    for (const text in data) {
+        if (body.toLowerCase() === text.toLowerCase()) {
+            if (config.AUTO_STICKER === 'true') {
+                const stickerPath = path.join(__dirname, '../all/autosticker', data[text]);
+
+                if (fs.existsSync(stickerPath)) {
+                    const stickerBuffer = fs.readFileSync(stickerPath);
+
+                    await conn.sendMessage(from, {
+                        sticker: stickerBuffer,
+                        packname: 'ℐ Ꭿℳ TℛℰℕⅅℰX',
+                        author: 'ʟᴏʀᴅ ᴍᴋ'
+                    }, { quoted: mek });
+                } else {
+                    console.warn(`Sticker not found: ${stickerPath}`);
+                }
+            }
         }
-      }
     }
-  } catch (e) {
-    console.error('AutoSticker error:', e);
-  }
 });
+
