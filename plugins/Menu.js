@@ -20,7 +20,7 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 ┃◈┃• ➽ *Owner :* ${config.OWNER_NAME}
 ┃◈┃• ➽ *Prefix :* [${config.PREFIX}]
 ┃◈┃• ➽ *Platform :* Heroku
-┃◈┃• ➽ *Version :* 5.0.0 max
+┃◈┃• ➽ *Version :* undefined
 ┃◈┃• ➽ *Runtime :* ${runtime(process.uptime())}
 ┃◈╰─────────────────┈⊷
 ╰━━━━━━━━━━━━━━━━━━━┈⊷
