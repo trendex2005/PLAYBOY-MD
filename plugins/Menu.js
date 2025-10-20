@@ -6,7 +6,7 @@ const axios = require('axios')
 
 cmd({
     pattern: "menu",
-    alias: ["trendex","king"],
+    alias: ["trendx","help"],
     use: '.m',
     desc: "Show all bot commands",
     category: "list",
