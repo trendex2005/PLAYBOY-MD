@@ -1,16 +1,16 @@
 // balance.js
 // Created by sung🤴
 
-const { lite } = require('../lite');
+const { cmd } = require('../command');;
 const fs = require('fs');
-const config = require('../settings');
+const config = require("../config");
 
 const dataFile = './data/economy.json'; // File to store user balances
 
 // Ensure database exists
 if (!fs.existsSync(dataFile)) fs.writeFileSync(dataFile, JSON.stringify({ users: {} }));
 
-lite({
+cmd({
     pattern: "balance",
     alias: ["bal", "coins"],
     desc: "Check your current coin balance",
@@ -32,7 +32,7 @@ lite({
     const message = `
 ╭───「 💰 *Your Balance* 💰 」
 │
-│ 👤 User: ${m.pushName || "Unknown"}
+│ 👤 User: ${m.pushName || "Undefined"}
 │ 🏦 Coins: ${coins} 💎
 │
 ╰───────────────────────────╯
