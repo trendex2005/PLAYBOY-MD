@@ -5,7 +5,7 @@ cmd({
     pattern: "antidelete",
     alias: ['antidel', 'del'],
     desc: "Toggle anti-delete feature",
-    category: "misc",
+    category: "owner",
     filename: __filename
 },
 async (conn, mek, m, { from, reply, text, isCreator }) => {
