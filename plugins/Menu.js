@@ -6,7 +6,7 @@ const axios = require('axios')
 
 cmd({
     pattern: "menu",
-    alias: ["trendx","help"],
+    alias: ["list","help"],
     use: '.m',
     desc: "Show all bot commands",
     category: "list",
@@ -366,12 +366,7 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
             { quoted: mek }
         );
 
-        // Send audio
-        await conn.sendMessage(from, {
-            audio: { url: 'https://files.catbox.moe/0cbqfa.mp3' },
-            mimetype: 'audio/mp4',
-            ptt: true
-        }, { quoted: mek });
+        // Send audio removed by trendex
         
     } catch (e) {
         console.log(e);
