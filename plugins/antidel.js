@@ -20,10 +20,9 @@ async (conn, mek, m, { from, reply, q, text, isCreator, fromMe }) => {
 
         switch (command) {
             case 'on':
-                await setAnti('gc', false);
-                await setAnti('dm', false);
-                return reply('_AntiDelete is now off for Group Chats and Direct Messages._');
-
+    await setAnti('gc', true);
+    await setAnti('dm', true);
+    return reply('_AntiDelete is now ON for Group Chats and Direct Messages._');
             case 'off gc':
                 await setAnti('gc', false);
                 return reply('_AntiDelete for Group Chats is now disabled._');
