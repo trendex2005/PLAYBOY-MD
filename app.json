@@ -43,12 +43,7 @@
       "required": false,
       "value": "true"  
     },    
-   
-    "AUTO_REPLY": {
-      "description": "Make it true if you want automatic reply.",
-      "required": false,
-      "value": "true"
-    }, 
+
 
     "AUTO_STICKER": {
       "description": "Make it true if you want automatic sticker.",
@@ -155,7 +150,7 @@
     "AUTO_TYPING": {
       "description": "Make it true if you want auto typing.",
       "required": false,
-      "value": "true"
+      "value": "false"
     },
 
     "AUTO_REACT": {
