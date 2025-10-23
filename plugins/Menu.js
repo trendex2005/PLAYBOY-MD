@@ -164,6 +164,8 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 ╭━━〔  *OWNER MENU* 〕━━┈⊷
 ┃◈╭─────────────────·๏
 ┃◈┃• ➽ coins
+┃◈┃• ➽ virtualnumber
+┃◈┃• ➽ numberlist
 ┃◈┃• ➽ menu
 ┃◈┃• ➽ menu2
 ┃◈┃• ➽ vv
