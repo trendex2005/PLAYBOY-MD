@@ -41,6 +41,9 @@
     "sequelize": "^6.37.5",
     "sqlite3": "^5.1.7-rc.0",
     "dotenv": "^16.5.0",
+       "@mrnima/tiktok-downloader":"1.0.0",
+    "@mrnima/facebook-downloader":"1.0.0",
+    "mrnima-moviedl":"1.0.0"
     "imagekit": "^5.1.0",
     "jimp": "latest",
     "api-dylux": "latest",
