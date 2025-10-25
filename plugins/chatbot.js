@@ -1,11 +1,11 @@
-const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
+const axios = require("axios");
 const { cmd } = require("../command");
 
 const USER_GROUP_DATA = path.join(__dirname, "../data/userGroupData.json");
 
-// Load & Save chatbot status
+// Load & Save user chatbot states
 function loadData() {
   try {
     return JSON.parse(fs.readFileSync(USER_GROUP_DATA));
@@ -13,96 +13,77 @@ function loadData() {
     return { chatbot: {} };
   }
 }
-
 function saveData(data) {
   fs.writeFileSync(USER_GROUP_DATA, JSON.stringify(data, null, 2));
 }
 
-// Random delay for typing simulation
-function randomDelay() {
-  return Math.floor(Math.random() * 2000) + 1000;
-}
-
+// Simulate typing
 async function showTyping(conn, chatId) {
   try {
     await conn.presenceSubscribe(chatId);
     await conn.sendPresenceUpdate("composing", chatId);
-    await new Promise(resolve => setTimeout(resolve, randomDelay()));
+    await new Promise(r => setTimeout(r, 1500));
   } catch {}
 }
 
-// === MAIN COMMAND ===
+/* ==========================================================
+   COMMAND: .chatbot on / off
+   ========================================================== */
 cmd({
   pattern: "chatbot",
-  alias: ["cb"],
   react: "🤖",
-  desc: "Enable or disable chatbot in private chats.",
+  desc: "Enable or disable the private AI chatbot.",
   category: "ai",
   filename: __filename
 }, async (conn, m, store, { from, isGroup, q, reply }) => {
-  const data = loadData();
-
   if (isGroup) return reply("❎ This command only works in *private chats*.");
+
+  const data = loadData();
 
   if (!q) {
     const status = data.chatbot[from] ? "🟢 ON" : "🔴 OFF";
-    return reply(
-      `*🤖 CHATBOT CONTROL PANEL*\n\nUse:\n.chatbot on — Enable chatbot\n.chatbot off — Disable chatbot\n\nStatus: ${status}`
-    );
+    return reply(`🤖 *Chatbot Control*\n\nUse:\n.chatbot on — Enable chatbot\n.chatbot off — Disable chatbot\n\nStatus: ${status}`);
   }
 
   if (q === "on") {
     data.chatbot[from] = true;
     saveData(data);
-    return reply("✅ Chatbot has been *enabled*! You can now talk to me here.");
+    return reply("✅ Chatbot has been *enabled*! You can now chat with me directly.");
   }
 
   if (q === "off") {
     delete data.chatbot[from];
     saveData(data);
-    return reply("🛑 Chatbot has been *disabled* in this chat.");
+    return reply("🛑 Chatbot has been *disabled* for this chat.");
   }
 
   reply("⚠️ Invalid option. Use `.chatbot on` or `.chatbot off`.");
 });
 
-// === AUTO RESPONSE HANDLER ===
+/* ==========================================================
+   AUTO CHATBOT RESPONSE (PRIVATE CHATS ONLY)
+   ========================================================== */
 cmd({
   on: "message"
-}, async (conn, m, store) => {
+}, async (conn, m, store, { from, isGroup, body }) => {
+  if (isGroup || !body || m.key.fromMe) return;
+
   const data = loadData();
-  const from = m.key.remoteJid;
-  const isGroup = from.endsWith("@g.us");
-
-  // Only respond in private chats
-  if (isGroup) return;
-  if (!data.chatbot[from]) return; // chatbot off
-  if (m.key.fromMe) return;
-
-  const text =
-    m.message?.conversation ||
-    m.message?.extendedTextMessage?.text ||
-    "";
-
-  if (!text.trim()) return;
-
-  await showTyping(conn, from);
+  if (!data.chatbot[from]) return; // chatbot disabled for this user
 
   try {
-    const response = await axios.get(
-      `https://api.dreaded.site/api/chatgpt?text=${encodeURIComponent(text)}`
-    );
+    await showTyping(conn, from);
+    const res = await axios.get(`https://api.dreaded.site/api/chatgpt?text=${encodeURIComponent(body)}`);
 
     const answer =
-      response.data?.result?.prompt ||
-      response.data?.result ||
-      "🤖 I'm not sure how to respond to that.";
-
-    await new Promise(r => setTimeout(r, randomDelay()));
+      res.data?.result?.prompt ||
+      res.data?.result ||
+      res.data?.response ||
+      "🤔 I couldn’t think of a good reply just now.";
 
     await conn.sendMessage(from, { text: answer }, { quoted: m });
-  } catch (error) {
-    console.error("Chatbot API Error:", error);
-    await conn.sendMessage(from, { text: "⚠️ I had trouble thinking just now. Try again later." }, { quoted: m });
+  } catch (err) {
+    console.error("Chatbot Error:", err.message);
+    await conn.sendMessage(from, { text: "⚠️ Something went wrong. Try again later." }, { quoted: m });
   }
 });
