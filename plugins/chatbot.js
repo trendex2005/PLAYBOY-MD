@@ -1,89 +1,277 @@
-const fs = require("fs");
-const path = require("path");
-const axios = require("axios");
-const { cmd } = require("../command");
+const fs = require('fs');
+const path = require('path');
+const axios = require('axios');
 
-const USER_GROUP_DATA = path.join(__dirname, "../data/userGroupData.json");
+const USER_GROUP_DATA = path.join(__dirname, '../data/userGroupData.json');
 
-// Load & Save user chatbot states
-function loadData() {
-  try {
-    return JSON.parse(fs.readFileSync(USER_GROUP_DATA));
-  } catch {
-    return { chatbot: {} };
-  }
-}
-function saveData(data) {
-  fs.writeFileSync(USER_GROUP_DATA, JSON.stringify(data, null, 2));
-}
+// In-memory storage for chat history and user info
+const chatMemory = {
+    messages: new Map(), // Stores last 5 messages per user
+    userInfo: new Map()  // Stores user information
+};
 
-// Simulate typing
-async function showTyping(conn, chatId) {
-  try {
-    await conn.presenceSubscribe(chatId);
-    await conn.sendPresenceUpdate("composing", chatId);
-    await new Promise(r => setTimeout(r, 1500));
-  } catch {}
+// Load user group data
+function loadUserGroupData() {
+    try {
+        return JSON.parse(fs.readFileSync(USER_GROUP_DATA));
+    } catch (error) {
+        console.error('❌ Error loading user group data:', error.message);
+        return { groups: [], chatbot: {} };
+    }
 }
 
-/* ==========================================================
-   COMMAND: .chatbot on / off
-   ========================================================== */
-cmd({
-  pattern: "chatbot",
-  react: "🤖",
-  desc: "Enable or disable the private AI chatbot.",
-  category: "ai",
-  filename: __filename
-}, async (conn, m, store, { from, isGroup, q, reply }) => {
-  if (isGroup) return reply("❎ This command only works in *private chats*.");
+// Save user group data
+function saveUserGroupData(data) {
+    try {
+        fs.writeFileSync(USER_GROUP_DATA, JSON.stringify(data, null, 2));
+    } catch (error) {
+        console.error('❌ Error saving user group data:', error.message);
+    }
+}
 
-  const data = loadData();
+// Add random delay between 2-5 seconds
+function getRandomDelay() {
+    return Math.floor(Math.random() * 3000) + 2000;
+}
 
-  if (!q) {
-    const status = data.chatbot[from] ? "🟢 ON" : "🔴 OFF";
-    return reply(`🤖 *Chatbot Control*\n\nUse:\n.chatbot on — Enable chatbot\n.chatbot off — Disable chatbot\n\nStatus: ${status}`);
-  }
+// Add typing indicator
+async function showTyping(sock, chatId) {
+    try {
+        await sock.presenceSubscribe(chatId);
+        await sock.sendPresenceUpdate('composing', chatId);
+        await new Promise(resolve => setTimeout(resolve, getRandomDelay()));
+    } catch (error) {
+        console.error('Typing indicator error:', error);
+    }
+}
 
-  if (q === "on") {
-    data.chatbot[from] = true;
-    saveData(data);
-    return reply("✅ Chatbot has been *enabled*! You can now chat with me directly.");
-  }
+// Extract user information from messages
+function extractUserInfo(message) {
+    const info = {};
+    
+    // Extract name
+    if (message.toLowerCase().includes('my name is')) {
+        info.name = message.split('my name is')[1].trim().split(' ')[0];
+    }
+    
+    // Extract age
+    if (message.toLowerCase().includes('i am') && message.toLowerCase().includes('years old')) {
+        info.age = message.match(/\d+/)?.[0];
+    }
+    
+    // Extract location
+    if (message.toLowerCase().includes('i live in') || message.toLowerCase().includes('i am from')) {
+        info.location = message.split(/(?:i live in|i am from)/i)[1].trim().split(/[.,!?]/)[0];
+    }
+    
+    return info;
+}
 
-  if (q === "off") {
-    delete data.chatbot[from];
-    saveData(data);
-    return reply("🛑 Chatbot has been *disabled* for this chat.");
-  }
+async function handleChatbotCommand(sock, chatId, message, match) {
+    if (!match) {
+        await showTyping(sock, chatId);
+        return sock.sendMessage(chatId, {
+            text: `*CHATBOT SETUP*\n\n*.chatbot on*\nEnable chatbot\n\n*.chatbot off*\nDisable chatbot in this group`,
+            quoted: message
+        });
+    }
 
-  reply("⚠️ Invalid option. Use `.chatbot on` or `.chatbot off`.");
-});
+    const data = loadUserGroupData();
+    
+    // Get bot's number
+    const botNumber = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+    
+    // Check if sender is bot owner
+    const senderId = message.key.participant || message.participant || message.pushName || message.key.remoteJid;
+    const isOwner = senderId === botNumber;
 
-/* ==========================================================
-   AUTO CHATBOT RESPONSE (PRIVATE CHATS ONLY)
-   ========================================================== */
-cmd({
-  on: "message"
-}, async (conn, m, store, { from, isGroup, body }) => {
-  if (isGroup || !body || m.key.fromMe) return;
+    // If it's the bot owner, allow access immediately
+    if (isOwner) {
+        if (match === 'on') {
+            await showTyping(sock, chatId);
+            if (data.chatbot[chatId]) {
+                return sock.sendMessage(chatId, { 
+                    text: '*Chatbot is already enabled for this group*',
+                    quoted: message
+                });
+            }
+            data.chatbot[chatId] = true;
+            saveUserGroupData(data);
+            console.log(`✅ Chatbot enabled for group ${chatId}`);
+            return sock.sendMessage(chatId, { 
+                text: '*Chatbot has been enabled for this group*',
+                quoted: message
+            });
+        }
 
-  const data = loadData();
-  if (!data.chatbot[from]) return; // chatbot disabled for this user
+        if (match === 'off') {
+            await showTyping(sock, chatId);
+            if (!data.chatbot[chatId]) {
+                return sock.sendMessage(chatId, { 
+                    text: '*Chatbot is already disabled for this group*',
+                    quoted: message
+                });
+            }
+            delete data.chatbot[chatId];
+            saveUserGroupData(data);
+            console.log(`✅ Chatbot disabled for group ${chatId}`);
+            return sock.sendMessage(chatId, { 
+                text: '*Chatbot has been disabled for this group*',
+                quoted: message
+            });
+        }
+    }
 
-  try {
-    await showTyping(conn, from);
-    const res = await axios.get(`https://api.dreaded.site/api/chatgpt?text=${encodeURIComponent(body)}`);
+    // For non-owners, check admin status
+    let isAdmin = false;
+    if (chatId.endsWith('@g.us')) {
+        try {
+            const groupMetadata = await sock.groupMetadata(chatId);
+            isAdmin = groupMetadata.participants.some(p => p.id === senderId && (p.admin === 'admin' || p.admin === 'superadmin'));
+        } catch (e) {
+            console.warn('⚠️ Could not fetch group metadata. Bot might not be admin.');
+        }
+    }
 
-    const answer =
-      res.data?.result?.prompt ||
-      res.data?.result ||
-      res.data?.response ||
-      "🤔 I couldn’t think of a good reply just now.";
+    if (!isAdmin && !isOwner) {
+        await showTyping(sock, chatId);
+        return sock.sendMessage(chatId, {
+            text: '❌ Only group admins or the bot owner can use this command.',
+            quoted: message
+        });
+    }
 
-    await conn.sendMessage(from, { text: answer }, { quoted: m });
-  } catch (err) {
-    console.error("Chatbot Error:", err.message);
-    await conn.sendMessage(from, { text: "⚠️ Something went wrong. Try again later." }, { quoted: m });
-  }
-});
+    if (match === 'on') {
+        await showTyping(sock, chatId);
+        if (data.chatbot[chatId]) {
+            return sock.sendMessage(chatId, { 
+                text: '*Chatbot is already enabled for this group*',
+                quoted: message
+            });
+        }
+        data.chatbot[chatId] = true;
+        saveUserGroupData(data);
+        console.log(`✅ Chatbot enabled for group ${chatId}`);
+        return sock.sendMessage(chatId, { 
+            text: '*Chatbot has been enabled for this group*',
+            quoted: message
+        });
+    }
+
+    if (match === 'off') {
+        await showTyping(sock, chatId);
+        if (!data.chatbot[chatId]) {
+            return sock.sendMessage(chatId, { 
+                text: '*Chatbot is already disabled for this group*',
+                quoted: message
+            });
+        }
+        delete data.chatbot[chatId];
+        saveUserGroupData(data);
+        console.log(`✅ Chatbot disabled for group ${chatId}`);
+        return sock.sendMessage(chatId, { 
+            text: '*Chatbot has been disabled for this group*',
+            quoted: message
+        });
+    }
+
+    await showTyping(sock, chatId);
+    return sock.sendMessage(chatId, { 
+        text: '*Invalid command. Use .chatbot to see usage*',
+        quoted: message
+    });
+}
+
+async function handleChatbotResponse(sock, chatId, message, userMessage, senderId) {
+    const data = loadUserGroupData();
+    if (!data.chatbot[chatId]) return;
+
+    try {
+        // Get bot's ID
+        const botNumber = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+
+        // Check for mentions and replies
+        let isBotMentioned = false;
+        let isReplyToBot = false;
+
+        // Check if message is a reply and contains bot mention
+        if (message.message?.extendedTextMessage) {
+            const mentionedJid = message.message.extendedTextMessage.contextInfo?.mentionedJid || [];
+            const quotedParticipant = message.message.extendedTextMessage.contextInfo?.participant;
+            
+            // Check if bot is mentioned in the reply
+            isBotMentioned = mentionedJid.some(jid => jid === botNumber);
+            
+            // Check if replying to bot's message
+            isReplyToBot = quotedParticipant === botNumber;
+        }
+        // Also check regular mentions in conversation
+        else if (message.message?.conversation) {
+            isBotMentioned = userMessage.includes(`@${botNumber.split('@')[0]}`);
+        }
+
+        if (!isBotMentioned && !isReplyToBot) return;
+
+        // Clean the message
+        let cleanedMessage = userMessage;
+        if (isBotMentioned) {
+            cleanedMessage = cleanedMessage.replace(new RegExp(`@${botNumber.split('@')[0]}`, 'g'), '').trim();
+        }
+
+        // Initialize user's chat memory if not exists
+        if (!chatMemory.messages.has(senderId)) {
+            chatMemory.messages.set(senderId, []);
+            chatMemory.userInfo.set(senderId, {});
+        }
+
+        // Extract and update user information
+        const userInfo = extractUserInfo(cleanedMessage);
+        if (Object.keys(userInfo).length > 0) {
+            chatMemory.userInfo.set(senderId, {
+                ...chatMemory.userInfo.get(senderId),
+                ...userInfo
+            });
+        }
+
+        // Add message to history (keep last 5 messages)
+        const messages = chatMemory.messages.get(senderId);
+        messages.push(cleanedMessage);
+        if (messages.length > 20) {
+            messages.shift();
+        }
+        chatMemory.messages.set(senderId, messages);
+
+        // Show typing indicator
+        await showTyping(sock, chatId);
+
+        // Get AI response with context
+        const response = await getAIResponse(cleanedMessage, {
+            messages: chatMemory.messages.get(senderId),
+            userInfo: chatMemory.userInfo.get(senderId)
+        });
+
+        if (!response) {
+            await sock.sendMessage(chatId, { 
+                text: "Hmm, let me think about that... 🤔\nI'm having trouble processing your request right now.",
+                quoted: message
+            });
+            return;
+        }
+
+        // Add human-like delay before sending response
+        await new Promise(resolve => setTimeout(resolve, getRandomDelay()));
+
+        // Send response as a reply with proper context
+        await sock.sendMessage(chatId, {
+            text: response
+        }, {
+            quoted: message
+        });
+
+    } catch (error) {
+        console.error('❌ Error in chatbot response:', error.message);
+        await sock.sendMessage(chatId, { 
+            text: "Oops! 😅 I got a bit confused there. Could you try asking that again?",
+            quoted: message
+        });
+}
