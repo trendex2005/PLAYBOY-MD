@@ -1,142 +1,108 @@
+const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
-const axios = require("axios");
 const { cmd } = require("../command");
 
 const USER_GROUP_DATA = path.join(__dirname, "../data/userGroupData.json");
-const chatMemory = new Map();
 
-// Load and save group/user chatbot data
-function loadUserGroupData() {
+// Load & Save chatbot status
+function loadData() {
   try {
     return JSON.parse(fs.readFileSync(USER_GROUP_DATA));
   } catch {
     return { chatbot: {} };
   }
 }
-function saveUserGroupData(data) {
+
+function saveData(data) {
   fs.writeFileSync(USER_GROUP_DATA, JSON.stringify(data, null, 2));
 }
 
-// Random delay for human-like typing
-function getRandomDelay() {
-  return Math.floor(Math.random() * 2000) + 2000;
+// Random delay for typing simulation
+function randomDelay() {
+  return Math.floor(Math.random() * 2000) + 1000;
 }
 
-// Typing simulation
-async function showTyping(sock, chatId) {
+async function showTyping(conn, chatId) {
   try {
-    await sock.presenceSubscribe(chatId);
-    await sock.sendPresenceUpdate("composing", chatId);
-    await new Promise(resolve => setTimeout(resolve, getRandomDelay()));
+    await conn.presenceSubscribe(chatId);
+    await conn.sendPresenceUpdate("composing", chatId);
+    await new Promise(resolve => setTimeout(resolve, randomDelay()));
   } catch {}
 }
 
-// Extract user info
-function extractUserInfo(text) {
-  const info = {};
-  if (text.toLowerCase().includes("my name is"))
-    info.name = text.split("my name is")[1].trim().split(" ")[0];
-  if (text.match(/\b\d+\s?years old\b/))
-    info.age = text.match(/\d+/)?.[0];
-  if (text.toLowerCase().includes("i live in") || text.toLowerCase().includes("i am from"))
-    info.location = text.split(/i live in|i am from/i)[1]?.trim().split(/[.,!?]/)[0];
-  return info;
-}
-
-// AI response using Axios
-async function getAIResponse(text) {
-  try {
-    const res = await axios.get(`https://api.dreaded.site/api/chatgpt?text=${encodeURIComponent(text)}`);
-    return res.data?.result?.prompt || res.data?.result || res.data?.response || "I’m not sure how to reply to that. 🤔";
-  } catch (e) {
-    return "⚠️ I had trouble thinking of a response just now. Try again!";
-  }
-}
-
-/* =============================================================
-   COMMAND: .chatbot on/off  (PRIVATE ONLY)
-   ============================================================= */
+// === MAIN COMMAND ===
 cmd({
   pattern: "chatbot",
   alias: ["cb"],
   react: "🤖",
-  desc: "Enable or disable chatbot in private chat.",
+  desc: "Enable or disable chatbot in private chats.",
   category: "ai",
   filename: __filename
 }, async (conn, m, store, { from, isGroup, q, reply }) => {
-  const data = loadUserGroupData();
+  const data = loadData();
 
-  // Only private chats allowed
   if (isGroup) return reply("❎ This command only works in *private chats*.");
 
   if (!q) {
     const status = data.chatbot[from] ? "🟢 ON" : "🔴 OFF";
     return reply(
-      `*🤖 CHATBOT CONTROL PANEL*\n\n` +
-      `Use:\n.chatbot on — Enable chatbot\n.chatbot off — Disable chatbot\n\nStatus: ${status}`
+      `*🤖 CHATBOT CONTROL PANEL*\n\nUse:\n.chatbot on — Enable chatbot\n.chatbot off — Disable chatbot\n\nStatus: ${status}`
     );
   }
 
   if (q === "on") {
-    if (data.chatbot[from]) return reply("✅ Chatbot is already *ON*.");
     data.chatbot[from] = true;
-    saveUserGroupData(data);
-    return reply("🤖 Chatbot has been *enabled*! You can now talk to me here.");
+    saveData(data);
+    return reply("✅ Chatbot has been *enabled*! You can now talk to me here.");
   }
 
   if (q === "off") {
-    if (!data.chatbot[from]) return reply("❎ Chatbot is already *OFF*.");
     delete data.chatbot[from];
-    saveUserGroupData(data);
-    return reply("🛑 Chatbot has been *disabled* for this chat.");
+    saveData(data);
+    return reply("🛑 Chatbot has been *disabled* in this chat.");
   }
 
   reply("⚠️ Invalid option. Use `.chatbot on` or `.chatbot off`.");
 });
 
-/* =============================================================
-   AUTO CHATBOT RESPONSE HANDLER (PRIVATE ONLY)
-   ============================================================= */
-module.exports = {
-  onLoad: sock => {
-    sock.ev.on("messages.upsert", async ({ messages }) => {
-      const msg = messages[0];
-      if (!msg.message) return;
+// === AUTO RESPONSE HANDLER ===
+cmd({
+  on: "message"
+}, async (conn, m, store) => {
+  const data = loadData();
+  const from = m.key.remoteJid;
+  const isGroup = from.endsWith("@g.us");
 
-      const chatId = msg.key.remoteJid;
-      const fromMe = msg.key.fromMe;
-      const isGroup = chatId.endsWith("@g.us");
+  // Only respond in private chats
+  if (isGroup) return;
+  if (!data.chatbot[from]) return; // chatbot off
+  if (m.key.fromMe) return;
 
-      if (fromMe || isGroup) return;
+  const text =
+    m.message?.conversation ||
+    m.message?.extendedTextMessage?.text ||
+    "";
 
-      const data = loadUserGroupData();
-      if (!data.chatbot[chatId]) return; // chatbot not enabled for this user
+  if (!text.trim()) return;
 
-      const userMessage =
-        msg.message.conversation ||
-        msg.message.extendedTextMessage?.text ||
-        msg.message?.imageMessage?.caption ||
-        "";
+  await showTyping(conn, from);
 
-      if (!userMessage.trim()) return;
+  try {
+    const response = await axios.get(
+      `https://api.dreaded.site/api/chatgpt?text=${encodeURIComponent(text)}`
+    );
 
-      // Manage user message memory
-      if (!chatMemory.has(chatId)) chatMemory.set(chatId, []);
-      const messages = chatMemory.get(chatId);
-      messages.push(userMessage);
-      if (messages.length > 20) messages.shift();
-      chatMemory.set(chatId, messages);
+    const answer =
+      response.data?.result?.prompt ||
+      response.data?.result ||
+      "🤖 I'm not sure how to respond to that.";
 
-      // Typing + delay
-      await showTyping(sock, chatId);
+    await new Promise(r => setTimeout(r, randomDelay()));
 
-      // Get AI response
-      const response = await getAIResponse(userMessage);
-      await new Promise(r => setTimeout(r, getRandomDelay()));
-
-      // Send reply
-      await sock.sendMessage(chatId, { text: response }, { quoted: msg });
-    });
+    await conn.sendMessage(from, { text: answer }, { quoted: m });
+  } catch (error) {
+    console.error("Chatbot API Error:", error);
+    await conn.sendMessage(from, { text: "⚠️ I had trouble thinking just now. Try again later." }, { quoted: m });
   }
-};
+});
