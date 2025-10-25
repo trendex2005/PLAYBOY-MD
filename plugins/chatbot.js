@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const axios = require('axios');
+const fetch = require('node-fetch');
 
 const USER_GROUP_DATA = path.join(__dirname, '../data/userGroupData.json');
 
@@ -274,4 +274,4 @@ async function handleChatbotResponse(sock, chatId, message, userMessage, senderI
             text: "Oops! 😅 I got a bit confused there. Could you try asking that again?",
             quoted: message
         });
-}
+    }
