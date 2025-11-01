@@ -4,11 +4,11 @@ const { cmd } = require("../command");
 let chatbotOn = false;
 
 // ============================
-// 🔹 TOGGLE CHATBOT
+// 🔹 CHATBOT TOGGLE COMMAND
 // ============================
 cmd({
   pattern: "chatbot",
-  desc: "Turn chatbot on/off for private messages only",
+  desc: "Turn chatbot on/off for private messages",
   category: "ai",
   react: "🤖",
   filename: __filename
@@ -18,7 +18,7 @@ async (conn, mek, m, { args, reply }) => {
 
   if (arg === "on") {
     chatbotOn = true;
-    return reply("✅ Chatbot is now *ON* — I’ll reply to your private messages.");
+    return reply("✅ Chatbot is now *ON* — I’ll reply to private messages using the AI API.");
   }
 
   if (arg === "off") {
@@ -26,46 +26,61 @@ async (conn, mek, m, { args, reply }) => {
     return reply("❌ Chatbot is now *OFF* — I’ll stop replying.");
   }
 
-  return reply(`🤖 Chatbot is currently *${chatbotOn ? "🟢 ON" : "🔴 OFF"}*\n\nUse:\n.chatbot on — enable\n.chatbot off — disable`);
+  reply(`🤖 Chatbot is currently *${chatbotOn ? "🟢 ON" : "🔴 OFF"}*\n\nUse:\n.chatbot on — enable\n.chatbot off — disable`);
 });
 
 // ============================
-// 🔹 RAW MESSAGE LISTENER
+// 🔹 RAW EVENT LISTENER (DMs only)
 // ============================
-cmd({
-  on: "message"
-}, async (conn, mek, m, { from }) => {
-  try {
-    if (!chatbotOn) return;           // Only when ON
-    if (mek.key.fromMe) return;       // Ignore self
-    if (m.isGroup) return;            // Ignore groups
+module.exports = (conn) => {
+  conn.ev.on("messages.upsert", async (msg) => {
+    try {
+      if (!chatbotOn) return;
+      const m = msg.messages[0];
+      if (!m.message) return;
 
-    const body =
-      m.text ||
-      m.body ||
-      m.message?.conversation ||
-      m.message?.extendedTextMessage?.text ||
-      "";
-    if (!body || body.startsWith(".")) return;
+      const from = m.key.remoteJid;
+      const isGroup = from.endsWith("@g.us");
+      const isMe = m.key.fromMe;
+      if (isGroup || isMe) return;
 
-    await conn.sendPresenceUpdate("composing", from);
+      const body =
+        m.message.conversation ||
+        m.message.extendedTextMessage?.text ||
+        m.message.imageMessage?.caption ||
+        "";
 
-    const query = encodeURIComponent(body);
-    const apiUrl = `https://api.giftedtech.web.id/api/ai/ai?apikey=gifted&q=${query}`;
+      if (!body || body.startsWith(".")) return;
 
-    const { data } = await axios.get(apiUrl);
-    const response =
-      data?.result ||
-      data?.message ||
-      "🤖 I'm here and listening!";
+      console.log("🤖 Chatbot DM received:", body);
 
-    await conn.sendMessage(
-      from,
-      { text: `${response}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴠɪɴɪᴄ-xᴍᴅ ᴀɪ*` },
-      { quoted: mek }
-    );
+      await conn.sendPresenceUpdate("composing", from);
 
-  } catch (err) {
-    console.error("Chatbot error:", err.message);
-  }
-});
+      // === USE GiftedTech API ===
+      const query = encodeURIComponent(body);
+      const apiUrl = `https://api.giftedtech.web.id/api/ai/ai?apikey=gifted&q=${query}`;
+
+      const { data } = await axios.get(apiUrl);
+
+      // Ensure only the API response is used
+      if (!data || (!data.result && !data.message)) {
+        console.log("⚠️ No valid response from API:", data);
+        return await conn.sendMessage(from, { text: "⚠️ Sorry, I didn’t get a response from the AI." }, { quoted: m });
+      }
+
+      const response = data.result || data.message;
+
+      // Send API response
+      await conn.sendMessage(
+        from,
+        { text: `${response}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴠɪɴɪᴄ-xᴍᴅ ᴀɪ*` },
+        { quoted: m }
+      );
+
+      console.log("✅ Chatbot replied with API response");
+
+    } catch (err) {
+      console.error("❌ Chatbot DM Error:", err.message);
+    }
+  });
+};
