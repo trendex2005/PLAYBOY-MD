@@ -1,66 +1,50 @@
 const axios = require("axios");
 const { cmd } = require("../command");
 
-let chatbotActive = false; // on/off state
+let chatbotOn = false; // chatbot state
 
 cmd({
   pattern: "chatbot",
-  desc: "Toggle AI chatbot on/off (works only in private chats)",
+  desc: "Toggle chatbot ON/OFF or chat with AI in DMs",
   category: "ai",
   react: "🤖",
   filename: __filename
 },
-async (conn, mek, m, { args, reply }) => {
-  const arg = (args[0] || "").toLowerCase();
+async (conn, mek, m, { from, args, reply }) => {
+  try {
+    const isGroup = from.endsWith("@g.us");
+    const body =
+      m.message?.conversation ||
+      m.message?.extendedTextMessage?.text ||
+      "";
 
-  if (arg === "on") {
-    chatbotActive = true;
-    reply("✅ Chatbot is now *ON* — I’ll reply to your private messages!");
-    return;
-  }
-
-  if (arg === "off") {
-    chatbotActive = false;
-    reply("❌ Chatbot is now *OFF* — I’ll stop replying.");
-    return;
-  }
-
-  reply("⚙️ Use `.chatbot on` or `.chatbot off` to control AI replies.");
-});
-
-// Listen for any incoming message (DM only)
-const { default: makeWASocket } = require("@whiskeysockets/baileys");
-
-// Wait a bit to ensure conn exists, then attach listener
-setTimeout(() => {
-  global.conn?.ev?.on("messages.upsert", async (m) => {
-    try {
-      const msg = m.messages[0];
-      if (!msg.message) return;
-      const from = msg.key.remoteJid;
-      const isGroup = from.endsWith("@g.us");
-      const isFromMe = msg.key.fromMe;
-
-      // Only DM, not self, and chatbot active
-      if (!isGroup && !isFromMe && chatbotActive) {
-        const body =
-          msg.message.conversation ||
-          msg.message?.extendedTextMessage?.text ||
-          "";
-
-        if (!body || body.startsWith(".")) return;
-
-        await global.conn.sendPresenceUpdate("composing", from);
-
-        const apiUrl = `https://api.giftedtech.web.id/api/ai/ai?apikey=gifted&q=${encodeURIComponent(body)}`;
-        const { data } = await axios.get(apiUrl);
-
-        const response = data?.result || data?.message || "🤖 No response from AI.";
-
-        await global.conn.sendMessage(from, { text: response }, { quoted: msg });
+    // If the user runs the command with arguments
+    if (args.length > 0) {
+      const option = args[0].toLowerCase();
+      if (option === "on") {
+        chatbotOn = true;
+        return reply("✅ Chatbot is now *ON* — I'll reply to your private messages.");
       }
-    } catch (err) {
-      console.error("Chatbot message error:", err.message);
+      if (option === "off") {
+        chatbotOn = false;
+        return reply("❌ Chatbot is now *OFF* — I won't reply to DMs.");
+      }
     }
-  });
-}, 5000);
+
+    // If chatbot is ON and message is from a DM, reply via API
+    if (chatbotOn && !isGroup) {
+      if (!body || body.startsWith(".")) return; // Ignore empty or command messages
+      await conn.sendPresenceUpdate("composing", from);
+
+      const apiUrl = `https://api.giftedtech.web.id/api/ai/ai?apikey=gifted&q=${encodeURIComponent(body)}`;
+      const { data } = await axios.get(apiUrl);
+      const response = data?.result || data?.message || "🤖 AI didn’t respond.";
+
+      await conn.sendMessage(from, { text: response }, { quoted: mek });
+    }
+
+  } catch (err) {
+    console.error("Chatbot Error:", err);
+    reply("❌ Error in chatbot: " + err.message);
+  }
+});
