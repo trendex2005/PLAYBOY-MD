@@ -2,22 +2,11 @@ const axios = require("axios");
 const { cmd } = require("../command");
 
 let chatbotEnabled = false;
-const messageMemory = new Map();
 
-function updateMemory(chatId, content, isUser) {
-  if (!messageMemory.has(chatId)) messageMemory.set(chatId, []);
-  messageMemory.get(chatId).push({
-    role: isUser ? "user" : "assistant",
-    content,
-  });
-  if (messageMemory.get(chatId).length > 5)
-    messageMemory.set(chatId, messageMemory.get(chatId).slice(-5));
-}
-
-// ========== TOGGLE COMMAND ==========
+// ======== TOGGLE COMMAND ========
 cmd({
   pattern: "chatbot",
-  desc: "Toggle or chat with the AI assistant.",
+  desc: "Toggle chatbot on or off for private chats.",
   category: "ai",
   react: "🤖",
   filename: __filename,
@@ -27,65 +16,56 @@ async (conn, mek, m, { from, args, reply }) => {
 
   if (arg === "on") {
     chatbotEnabled = true;
-    return reply("✅ *Chatbot has been enabled.*");
+    return reply("✅ *Chatbot enabled for private chats.*");
   }
+
   if (arg === "off") {
     chatbotEnabled = false;
-    return reply("❌ *Chatbot has been disabled.*");
+    return reply("❌ *Chatbot disabled.*");
   }
 
-  return reply(`🤖 *Chatbot is currently:* ${chatbotEnabled ? "🟢 ON" : "🔴 OFF"}\n\nUse:\n.chatbot on — enable\n.chatbot off — disable`);
+  return reply(
+    `🤖 *Chatbot Status:* ${chatbotEnabled ? "🟢 ON" : "🔴 OFF"}\n\nUse:\n.chatbot on — enable\n.chatbot off — disable`
+  );
 });
 
-// ========== AUTO REPLY HANDLER ==========
+// ======== AUTO REPLY TO PRIVATE MESSAGES ONLY ========
 cmd({
-  on: "message" // listen to all incoming messages
+  on: "message"
 },
 async (conn, mek, m, { from, reply }) => {
   try {
+    // Skip if chatbot is off
     if (!chatbotEnabled) return;
+
+    // Skip self messages
+    if (mek.key.fromMe) return;
+
+    // Skip group chats — only reply in private
+    if (m.isGroup) return;
 
     const body = m.body || m.text || "";
     if (!body) return;
 
-    // Ignore messages from self
-    if (mek.key.fromMe) return;
+    // Skip commands
+    if (body.startsWith(".")) return;
 
-    // Ignore command messages (that start with . or !)
-    if (body.startsWith(".") || body.startsWith("!")) return;
-
-    // Only respond to mentions in groups
-    if (m.isGroup) {
-      const mentionedJids = m.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
-      const botId = conn.user?.id || conn.user?.jid;
-      if (!mentionedJids.includes(botId)) return;
-    }
-
+    // Typing indicator
     await conn.sendPresenceUpdate("composing", from);
-    updateMemory(from, body, true);
 
-    const context = messageMemory.get(from)
-      ?.map(msg => `${msg.role}: ${msg.content}`)
-      .join("\n") || "";
+    // Query AI API
+    const prompt = encodeURIComponent(body);
+    const url = `https://api.giftedtech.web.id/api/ai/ai?apikey=gifted&q=${prompt}`;
 
-    const prompt = encodeURIComponent(
-`You are Vinic-Xmd AI, a friendly WhatsApp assistant made by Kelvin Tech.
-Previous chat:
-${context}
-User: ${body}`
-    );
+    const { data } = await axios.get(url);
+    const response = data?.result || data?.message || "🤖 I'm here to chat!";
 
-    const apiUrl = `https://api.giftedtech.web.id/api/ai/ai?apikey=gifted&q=${prompt}`;
-    const { data } = await axios.get(apiUrl);
-    const response = data?.result || data?.message || "🤖 I'm here!";
-
-    updateMemory(from, response, false);
-
+    // Send AI reply
     await conn.sendMessage(from, {
       text: `${response}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴠɪɴɪᴄ-xᴍᴅ ᴀɪ*`
     }, { quoted: mek });
 
   } catch (err) {
-    console.log("Chatbot error:", err.message);
+    console.error("Chatbot DM error:", err);
   }
 });
