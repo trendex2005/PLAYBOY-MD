@@ -1,14 +1,14 @@
 const axios = require("axios");
 const { cmd } = require("../command");
 
-let chatbotEnabled = false; // default OFF
+let chatbotOn = false;
 
-// =======================
-// 🔹 TOGGLE COMMAND
-// =======================
+// ============================
+// 🔹 TOGGLE CHATBOT
+// ============================
 cmd({
   pattern: "chatbot",
-  desc: "Toggle chatbot on/off (works only in private chat)",
+  desc: "Turn chatbot on/off for private messages only",
   category: "ai",
   react: "🤖",
   filename: __filename
@@ -17,31 +17,36 @@ async (conn, mek, m, { args, reply }) => {
   const arg = (args[0] || "").toLowerCase();
 
   if (arg === "on") {
-    chatbotEnabled = true;
-    return reply("✅ Chatbot has been *enabled* for private chats.");
+    chatbotOn = true;
+    return reply("✅ Chatbot is now *ON* — I’ll reply to your private messages.");
   }
 
   if (arg === "off") {
-    chatbotEnabled = false;
-    return reply("❌ Chatbot has been *disabled*.");
+    chatbotOn = false;
+    return reply("❌ Chatbot is now *OFF* — I’ll stop replying.");
   }
 
-  reply(`🤖 Chatbot is currently *${chatbotEnabled ? "ON 🟢" : "OFF 🔴"}*\n\nUse:\n.chatbot on — Enable chatbot\n.chatbot off — Disable chatbot`);
+  return reply(`🤖 Chatbot is currently *${chatbotOn ? "🟢 ON" : "🔴 OFF"}*\n\nUse:\n.chatbot on — enable\n.chatbot off — disable`);
 });
 
-// =======================
-// 🔹 AUTO-REPLY TO DM MESSAGES
-// =======================
+// ============================
+// 🔹 RAW MESSAGE LISTENER
+// ============================
 cmd({
-  on: "text"
-}, async (conn, mek, m, { from, reply }) => {
+  on: "message"
+}, async (conn, mek, m, { from }) => {
   try {
-    if (!chatbotEnabled) return; // Ignore if off
-    if (mek.key.fromMe) return; // Ignore own messages
-    if (m.isGroup) return; // Ignore groups
+    if (!chatbotOn) return;           // Only when ON
+    if (mek.key.fromMe) return;       // Ignore self
+    if (m.isGroup) return;            // Ignore groups
 
-    const body = m.body || m.text || "";
-    if (!body || body.startsWith(".")) return; // Skip empty/commands
+    const body =
+      m.text ||
+      m.body ||
+      m.message?.conversation ||
+      m.message?.extendedTextMessage?.text ||
+      "";
+    if (!body || body.startsWith(".")) return;
 
     await conn.sendPresenceUpdate("composing", from);
 
@@ -49,11 +54,16 @@ cmd({
     const apiUrl = `https://api.giftedtech.web.id/api/ai/ai?apikey=gifted&q=${query}`;
 
     const { data } = await axios.get(apiUrl);
-    const response = data?.result || data?.message || "I’m here and listening 👋";
+    const response =
+      data?.result ||
+      data?.message ||
+      "🤖 I'm here and listening!";
 
-    await conn.sendMessage(from, {
-      text: `${response}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴠɪɴɪᴄ-xᴍᴅ ᴀɪ*`
-    }, { quoted: mek });
+    await conn.sendMessage(
+      from,
+      { text: `${response}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴠɪɴɪᴄ-xᴍᴅ ᴀɪ*` },
+      { quoted: mek }
+    );
 
   } catch (err) {
     console.error("Chatbot error:", err.message);
