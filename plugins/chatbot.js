@@ -1,71 +1,61 @@
 const axios = require("axios");
 const { cmd } = require("../command");
 
-let chatbotEnabled = false;
+let chatbotEnabled = false; // default OFF
 
-// ======== TOGGLE COMMAND ========
+// =======================
+// 🔹 TOGGLE COMMAND
+// =======================
 cmd({
   pattern: "chatbot",
-  desc: "Toggle chatbot on or off for private chats.",
+  desc: "Toggle chatbot on/off (works only in private chat)",
   category: "ai",
   react: "🤖",
-  filename: __filename,
+  filename: __filename
 },
-async (conn, mek, m, { from, args, reply }) => {
+async (conn, mek, m, { args, reply }) => {
   const arg = (args[0] || "").toLowerCase();
 
   if (arg === "on") {
     chatbotEnabled = true;
-    return reply("✅ *Chatbot enabled for private chats.*");
+    return reply("✅ Chatbot has been *enabled* for private chats.");
   }
 
   if (arg === "off") {
     chatbotEnabled = false;
-    return reply("❌ *Chatbot disabled.*");
+    return reply("❌ Chatbot has been *disabled*.");
   }
 
-  return reply(
-    `🤖 *Chatbot Status:* ${chatbotEnabled ? "🟢 ON" : "🔴 OFF"}\n\nUse:\n.chatbot on — enable\n.chatbot off — disable`
-  );
+  reply(`🤖 Chatbot is currently *${chatbotEnabled ? "ON 🟢" : "OFF 🔴"}*\n\nUse:\n.chatbot on — Enable chatbot\n.chatbot off — Disable chatbot`);
 });
 
-// ======== AUTO REPLY TO PRIVATE MESSAGES ONLY ========
+// =======================
+// 🔹 AUTO-REPLY TO DM MESSAGES
+// =======================
 cmd({
-  on: "message"
-},
-async (conn, mek, m, { from, reply }) => {
+  on: "text"
+}, async (conn, mek, m, { from, reply }) => {
   try {
-    // Skip if chatbot is off
-    if (!chatbotEnabled) return;
-
-    // Skip self messages
-    if (mek.key.fromMe) return;
-
-    // Skip group chats — only reply in private
-    if (m.isGroup) return;
+    if (!chatbotEnabled) return; // Ignore if off
+    if (mek.key.fromMe) return; // Ignore own messages
+    if (m.isGroup) return; // Ignore groups
 
     const body = m.body || m.text || "";
-    if (!body) return;
+    if (!body || body.startsWith(".")) return; // Skip empty/commands
 
-    // Skip commands
-    if (body.startsWith(".")) return;
-
-    // Typing indicator
     await conn.sendPresenceUpdate("composing", from);
 
-    // Query AI API
-    const prompt = encodeURIComponent(body);
-    const url = `https://api.giftedtech.web.id/api/ai/ai?apikey=gifted&q=${prompt}`;
+    const query = encodeURIComponent(body);
+    const apiUrl = `https://api.giftedtech.web.id/api/ai/ai?apikey=gifted&q=${query}`;
 
-    const { data } = await axios.get(url);
-    const response = data?.result || data?.message || "🤖 I'm here to chat!";
+    const { data } = await axios.get(apiUrl);
+    const response = data?.result || data?.message || "I’m here and listening 👋";
 
-    // Send AI reply
     await conn.sendMessage(from, {
       text: `${response}\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴠɪɴɪᴄ-xᴍᴅ ᴀɪ*`
     }, { quoted: mek });
 
   } catch (err) {
-    console.error("Chatbot DM error:", err);
+    console.error("Chatbot error:", err.message);
   }
 });
