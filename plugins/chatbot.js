@@ -57,8 +57,8 @@ module.exports = (conn) => {
       await conn.sendPresenceUpdate("composing", from);
 
       // === USE GiftedTech API ===
-      const query = encodeURIComponent(body);
-      const apiUrl = `https://api.giftedtech.web.id/api/ai/ai?apikey=gifted&q=${query}`;
+    
+      const apiUrl = `https://api.giftedtech.web.id/api/ai/ai?apikey=gifted&q=${encodeURIComponent(q)}`;
 
       const { data } = await axios.get(apiUrl);
 
