@@ -106,8 +106,8 @@ async (robin, mek, m, { from, isGroup, isOwner, reply }) => {
 
 
 cmd({
-    pattern: "mute",
-    alias: ["silence", "lock"],
+    pattern: "close",
+    alias: ["lockgc", "lock"],
     react: "⚠️",
     desc: "Set group chat to admin-only messages.",
     category: "main",
@@ -136,8 +136,8 @@ async (robin, mek, m, { from, isGroup, isAdmins, isBotAdmins, reply }) => {
 });
 
 cmd({
-    pattern: "unmute",
-    alias: ["unlock"],
+    pattern: "open",
+    alias: ["opengc"],
     react: "⚠️",
     desc: "Allow everyone to send messages in the group.",
     category: "main",
