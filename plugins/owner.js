@@ -1,1 +1,296 @@
-function _0x491e(){const _0x5b500c=['VERSION:3.0\x0a','TREND-X\x20XMD\x20DEVELOPERS🥰💖🥰','@s.whatsapp.net','832308UJCDWG','https://files.catbox.moe/adymbp.jpg','OWNER_NAME','1492288zcQGjb','70SXLADn','An\x20error\x20occurred:\x20','https://files.catbox.moe/u66h53.mp3','Get\x20owner\x20number','210594Srwirb','sendMessage','audio/mp4','1677335lfsyir','220182RIjElg','../command','BEGIN:VCARD\x0a','owner','\x0a┃❍┃•\x20*ɴᴜᴍʙᴇʀ*\x20','replace','3cjIiek','╭━━〔\x20*TREND-X\x20𝐓𝐄𝐂𝐇*\x20〕━━┈⊷\x0a┃❍╭─────────────·๏\x0a┃❍┃•\x20*Here\x20is\x20the\x20owner\x20details*\x0a┃❍┃•\x20*ɴᴀᴍᴇ*\x20-\x20','error','message','735572uRbJiC','OWNER_NUMBER','2416005rhXvIm','main','120363401765045963@newsletter','TEL;type=CELL;type=VOICE;waid='];_0x491e=function(){return _0x5b500c;};return _0x491e();}const _0x3916ed=_0x1ad7;(function(_0x4a6358,_0x32c04e){const _0x516d8e=_0x1ad7,_0x39a7a9=_0x4a6358();while(!![]){try{const _0x5f784f=parseInt(_0x516d8e(0xb0))/0x1*(parseInt(_0x516d8e(0xaa))/0x2)+parseInt(_0x516d8e(0xbd))/0x3+parseInt(_0x516d8e(0xb4))/0x4+-parseInt(_0x516d8e(0xc8))/0x5+parseInt(_0x516d8e(0xc5))/0x6*(-parseInt(_0x516d8e(0xc1))/0x7)+-parseInt(_0x516d8e(0xc0))/0x8+parseInt(_0x516d8e(0xb6))/0x9;if(_0x5f784f===_0x32c04e)break;else _0x39a7a9['push'](_0x39a7a9['shift']());}catch(_0x2d206d){_0x39a7a9['push'](_0x39a7a9['shift']());}}}(_0x491e,0x2daae));const {cmd}=require(_0x3916ed(0xab)),config=require('../config');function _0x1ad7(_0x40b084,_0x32a3f6){const _0x491efb=_0x491e();return _0x1ad7=function(_0x1ad769,_0x30891b){_0x1ad769=_0x1ad769-0xaa;let _0xb9be81=_0x491efb[_0x1ad769];return _0xb9be81;},_0x1ad7(_0x40b084,_0x32a3f6);}cmd({'pattern':_0x3916ed(0xad),'react':'🦋','desc':_0x3916ed(0xc4),'category':_0x3916ed(0xb7),'filename':__filename},async(_0x3ac2ca,_0x54255b,_0x9960fd,{from:_0xa4b521})=>{const _0x1928b0=_0x3916ed;try{const _0xde3af8=config[_0x1928b0(0xb5)],_0x36eff7=config[_0x1928b0(0xbf)],_0x346a28=_0x1928b0(0xac)+_0x1928b0(0xba)+('FN:'+_0x36eff7+'\x0a')+(_0x1928b0(0xb9)+_0xde3af8[_0x1928b0(0xaf)]('+','')+':'+_0xde3af8+'\x0a')+'END:VCARD',_0x179846=await _0x3ac2ca[_0x1928b0(0xc6)](_0xa4b521,{'contacts':{'displayName':_0x36eff7,'contacts':[{'vcard':_0x346a28}]}});await _0x3ac2ca[_0x1928b0(0xc6)](_0xa4b521,{'image':{'url':_0x1928b0(0xbe)},'caption':_0x1928b0(0xb1)+_0x36eff7+_0x1928b0(0xae)+_0xde3af8+'\x0a┃❍┃•\x20*𝖵ᴇʀsɪᴏɴ*:\x201.0.0\x0a┃❍└───────────┈⊷\x0a╰──────────────┈⊷\x0a>\x20©TREND-X\x20ᴛᴇᴄʜ','contextInfo':{'mentionedJid':[_0xde3af8['replace']('+','')+_0x1928b0(0xbc)],'forwardingScore':0x3e7,'isForwarded':!![],'forwardedNewsletterMessageInfo':{'newsletterJid':_0x1928b0(0xb8),'newsletterName':_0x1928b0(0xbb),'serverMessageId':0x8f}}},{'quoted':_0x54255b}),await _0x3ac2ca[_0x1928b0(0xc6)](_0xa4b521,{'audio':{'url':_0x1928b0(0xc3)},'mimetype':_0x1928b0(0xc7),'ptt':!![]},{'quoted':_0x54255b});}catch(_0x5a538b){console[_0x1928b0(0xb2)](_0x5a538b),reply(_0x1928b0(0xc2)+_0x5a538b[_0x1928b0(0xb3)]);}});
+const { cmd } = require('../command');
+
+cmd({
+    pattern: "block",
+    react: "⚠️",
+    alias: ["ban"],
+    desc: "Block a user instantly.",
+    category: "main",
+    filename: __filename
+},
+async (robin, mek, m, { quoted, reply, isOwner }) => {
+    try {
+        // Check if the user is the bot owner
+        if (!isOwner) return reply("⚠️ Only the owner can use this command!");
+
+        // Check if the command is used on a quoted message
+        if (!quoted) return reply("⚠️ Please reply to the user's message to block them!");
+
+        // Extract the target user from the quoted message
+        const target = quoted.sender;
+
+        // Block the target user
+        await robin.updateBlockStatus(target, "block");
+
+        // Confirm success
+        return reply(`✅ Successfully blocked: @${target.split('@')[0]}`);
+    } catch (e) {
+        console.error("Block Error:", e);
+        return reply(`❌ Failed to block the user. Error: ${e.message}`);
+    }
+});
+
+
+cmd({
+    pattern: "kick",
+    alias: ["remove", "ban"],
+    react: "⚠️",
+    desc: "Remove a mentioned user from the group.",
+    category: "main",
+    filename: __filename
+},
+async (robin, mek, m, { from, isGroup, isAdmins, isBotAdmins, reply, quoted }) => {
+    try {
+        // Check if the command is used in a group
+        if (!isGroup) return reply("⚠️ This command can only be used in a group!");
+
+        // Check if the user issuing the command is an admin
+        if (!isAdmins) return reply("⚠️ Only group admins can use this command!");
+
+        // Check if the bot is an admin
+        if (!isBotAdmins) return reply("⚠️ I need to be an admin to execute this command!");
+
+        // Ensure a user is mentioned
+        if (!quoted) return reply("⚠️ Please reply to the user's message you want to kick!");
+
+        // Get the target user to remove
+        const target = quoted.sender;
+
+        // Ensure the target is not another admin
+        const groupMetadata = await robin.groupMetadata(from);
+        const groupAdmins = groupMetadata.participants.filter(participant => participant.admin).map(admin => admin.id);
+
+        if (groupAdmins.includes(target)) {
+            return reply("⚠️ I cannot remove another admin from the group!");
+        }
+
+        // Kick the target user
+        await robin.groupParticipantsUpdate(from, [target], "remove");
+
+        // Confirm the action
+        return reply(`✅ Successfully removed: @${target.split('@')[0]}`);
+    } catch (e) {
+        console.error("Kick Error:", e);
+        reply(`❌ Failed to remove the user. Error: ${e.message}`);
+    }
+});
+
+
+cmd({
+    pattern: "left",
+    alias: ["leave", "exit"],
+    react: "⚠️",
+    desc: "Leave the current group.",
+    category: "main",
+    filename: __filename
+},
+async (robin, mek, m, { from, isGroup, isOwner, reply }) => {
+    try {
+        // Check if the command is used in a group
+        if (!isGroup) return reply("⚠️ This command can only be used in a group!");
+
+        // Check if the user is the bot owner
+        if (!isOwner) return reply("⚠️ Only the owner can use this command!");
+
+        // Leave the group
+        await robin.groupLeave(from);
+
+        // Confirm leaving
+        console.log(`✅ Successfully left the group: ${from}`);
+    } catch (e) {
+        console.error("Leave Error:", e);
+        reply(`❌ Failed to leave the group. Error: ${e.message}`);
+    }
+});
+
+
+
+cmd({
+    pattern: "mute",
+    alias: ["silence", "lock"],
+    react: "⚠️",
+    desc: "Set group chat to admin-only messages.",
+    category: "main",
+    filename: __filename
+},
+async (robin, mek, m, { from, isGroup, isAdmins, isBotAdmins, reply }) => {
+    try {
+        // Check if the command is used in a group
+        if (!isGroup) return reply("⚠️ This command can only be used in a group!");
+
+        // Check if the user is an admin
+        if (!isAdmins) return reply("⚠️ This command is only for group admins!");
+
+        // Check if the bot is an admin
+        if (!isBotAdmins) return reply("⚠️ I need to be an admin to execute this command!");
+
+        // Set the group to admin-only
+        await robin.groupSettingUpdate(from, "announcement");
+
+        // Confirm the action
+        return reply("✅ Group has been muted. Only admins can send messages now!");
+    } catch (e) {
+        console.error("Mute Error:", e);
+        reply(`❌ Failed to mute the group. Error: ${e.message}`);
+    }
+});
+
+cmd({
+    pattern: "unmute",
+    alias: ["unlock"],
+    react: "⚠️",
+    desc: "Allow everyone to send messages in the group.",
+    category: "main",
+    filename: __filename
+},
+async (robin, mek, m, { from, isGroup, isAdmins, isBotAdmins, reply }) => {
+    try {
+        // Check if the command is used in a group
+        if (!isGroup) return reply("⚠️ This command can only be used in a group!");
+
+        // Check if the user is an admin
+        if (!isAdmins) return reply("⚠️ This command is only for group admins!");
+
+        // Check if the bot is an admin
+        if (!isBotAdmins) return reply("⚠️ I need to be an admin to execute this command!");
+
+        // Set the group to everyone can message
+        await robin.groupSettingUpdate(from, "not_announcement");
+
+        // Confirm the action
+        return reply("✅ Group has been unmuted. Everyone can send messages now!");
+    } catch (e) {
+        console.error("Unmute Error:", e);
+        reply(`❌ Failed to unmute the group. Error: ${e.message}`);
+    }
+});
+
+
+cmd({
+    pattern: "add",
+    alias: ["invite"],
+    react: "➕",
+    desc: "Add a user to the group.",
+    category: "main",
+    filename: __filename
+},
+async (robin, mek, m, { from, isGroup, isAdmins, isBotAdmins, reply, args }) => {
+    try {
+        // Check if the command is used in a group
+        if (!isGroup) return reply("⚠️ This command can only be used in a group!");
+
+        // Check if the user issuing the command is an admin
+        if (!isAdmins) return reply("⚠️ Only group admins can use this command!");
+
+        // Check if the bot is an admin
+        if (!isBotAdmins) return reply("⚠️ I need to be an admin to execute this command!");
+
+        // Ensure a phone number or user ID is provided
+        if (!args[0]) return reply("⚠️ Please provide the phone number of the user to add!");
+
+        // Parse the phone number and ensure it's in the correct format
+        const target = args[0].includes("@") ? args[0] : `${args[0]}@s.whatsapp.net`;
+
+        // Add the user to the group
+        await robin.groupParticipantsUpdate(from, [target], "add");
+
+        // Confirm success
+        return reply(`✅ Successfully added: @${target.split('@')[0]}`);
+    } catch (e) {
+        console.error("Add Error:", e);
+        reply(`❌ Failed to add the user. Error: ${e.message}`);
+    }
+});
+
+
+cmd({
+    pattern: "demote",
+    alias: ["member"],
+    react: "⚠️",
+    desc: "Remove admin privileges from a mentioned user.",
+    category: "main",
+    filename: __filename
+},
+async (robin, mek, m, { from, isGroup, isAdmins, isBotAdmins, reply, quoted }) => {
+    try {
+        // Check if the command is used in a group
+        if (!isGroup) return reply("⚠️ This command can only be used in a group!");
+
+        // Check if the user issuing the command is an admin
+        if (!isAdmins) return reply("⚠️ Only group admins can use this command!");
+
+        // Check if the bot is an admin
+        if (!isBotAdmins) return reply("⚠️ I need to be an admin to execute this command!");
+
+        // Ensure a user is mentioned
+        if (!quoted) return reply("⚠️ Please reply to the user's message you want to remove admin privileges from!");
+
+        // Get the target user to demote
+        const target = quoted.sender;
+
+        // Ensure the target is not the user who issued the command
+        if (target === from) return reply("⚠️ You cannot remove your own admin privileges!");
+
+        // Ensure the target is an admin
+        const groupMetadata = await robin.groupMetadata(from);
+        const groupAdmins = groupMetadata.participants.filter(participant => participant.admin).map(admin => admin.id);
+
+        if (!groupAdmins.includes(target)) {
+            return reply("⚠️ The mentioned user is not an admin!");
+        }
+
+        // Demote the target user
+        await robin.groupParticipantsUpdate(from, [target], "demote");
+
+        // Confirm the action
+        return reply(`✅ Successfully removed admin privileges from: @${target.split('@')[0]}`);
+    } catch (e) {
+        console.error("Dismiss Admin Error:", e);
+        reply(`❌ Failed to remove admin privileges. Error: ${e.message}`);
+    }
+});
+
+
+cmd({
+    pattern: "promote",
+    alias: ["admin", "makeadmin"],
+    react: "⚡",
+    desc: "Grant admin privileges to a mentioned user.",
+    category: "main",
+    filename: __filename
+},
+async (robin, mek, m, { from, isGroup, isAdmins, isBotAdmins, reply, quoted }) => {
+    try {
+        // Check if the command is used in a group
+        if (!isGroup) return reply("⚠️ This command can only be used in a group!");
+
+        // Check if the user issuing the command is an admin
+        if (!isAdmins) return reply("⚠️ Only group admins can use this command!");
+
+        // Check if the bot is an admin
+        if (!isBotAdmins) return reply("⚠️ I need to be an admin to execute this command!");
+
+        // Ensure a user is mentioned
+        if (!quoted) return reply("⚠️ Please reply to the user's message you want to promote to admin!");
+
+        // Get the target user to promote
+        const target = quoted.sender;
+
+        // Ensure the target is not already an admin
+        const groupMetadata = await robin.groupMetadata(from);
+        const groupAdmins = groupMetadata.participants.filter(participant => participant.admin).map(admin => admin.id);
+
+        if (groupAdmins.includes(target)) {
+            return reply("⚠️ The mentioned user is already an admin!");
+        }
+
+        // Promote the target user to admin
+        await robin.groupParticipantsUpdate(from, [target], "promote");
+
+        // Confirm the action
+        return reply(`✅ Successfully promoted @${target.split('@')[0]} to admin!`);
+    } catch (e) {
+        console.error("Promote Admin Error:", e);
+        reply(`❌ Failed to promote the user. Error: ${e.message}`);
+    }
+});
