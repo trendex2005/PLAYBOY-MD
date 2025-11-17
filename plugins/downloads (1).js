@@ -23,7 +23,7 @@ cmd({
       react: { text: "⏳", key: m.key }
     });
 
-    const response = await axios.get(`https://api.dreaded.site/api/igdl?url=https://www.instagram.com/reel/DBtcT9GJa-Y/?igsh=YzljYTk1ODg3Zg==${q}`);
+    const response = await axios.get(`https://api.dreaded.site/api/igdl?url=https://www.instagram.com/reel/DBtcT9GJa-Y/?igsh=YzljYTk1ODg3Zg=${q}`);
     const data = response.data;
 
     if (!data || data.status !== 200 || !data.downloadUrl) {
