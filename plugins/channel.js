@@ -12,7 +12,7 @@ cmd({
 }, async (conn, mek, m, { reply }) => {
     try {
         // Define the channel link inside the command
-        const channelLink = "https://whatsapp.com/channel/0029VaoRxGmJpe8lgCqT1T2h";
+        const channelLink = "https://whatsapp.com/channel/0029Vb6b7ZdF6sn4Vmjf2X1O";
 
         // Send the channel link to the user
         reply(`*ʜᴇʀᴇ's ᴛʜᴇ ʟɪɴᴋ ᴛᴏ ᴏᴜʀ ᴏғғɪᴄɪᴀʟ ᴡʜᴀᴛsᴀᴘᴘ ᴀʟɪ ᴄʜᴀɴɴᴇʟ*:\n\n${channelLink}\n\n> *ᴊᴏɪɴ ᴜs ᴛᴏ sᴛᴀʏ ᴜᴘᴅᴀᴛᴇᴅ ᴡɪᴛʜ ᴛʜᴇ ʟᴀᴛᴇsᴛ ɴᴇᴡs ᴀɴᴅ ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛs🧞‍♂️.*`);
@@ -33,7 +33,7 @@ cmd({
 }, async (conn, mek, m, { reply }) => {
     try {
         // Define the support link inside the command
-        const supportLink = "https://chat.whatsapp.com/Lx7sDv7jSy0CCTm5AliPdq";
+        const supportLink = "https://whatsapp.com/channel/0029Vb6b7ZdF6sn4Vmjf2X1O";
 
         // Send the support link to the user
         reply(`*ɴᴇᴇᴅ ʜᴇʟᴘ ᴏʀ ʜᴀᴠᴇ ǫᴜᴇsᴛɪᴏɴs ? ᴊᴏɪɴ ᴀʟɪ sᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ🪀*\n\n${supportLink}\n\n
