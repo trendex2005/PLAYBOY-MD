@@ -25,7 +25,7 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 ┃◈╰─────────────────┈⊷
 ╰━━━━━━━━━━━━━━━━━━━┈⊷
 
-╭━━〔 📥 *DOWNLOAD MENU* 〕━━┈⊷
+╭━━〔*DOWNLOAD MENU* 〕━━┈⊷
 ╭─────────────────·๏
 ┃➽ facebook
 ┃➽ mediafire
@@ -53,80 +53,75 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 ┃➽ ssweb
 ┃➽ tiks
 ╰━━━━━━━━━━━━━━━━━━━┈⊷
-
-╭━━〔 👥 *GROUP MENU* 〕━━┈⊷
-┃◈╭─────────────────·๏
-┃◈┃• ➽ grouplink
-┃◈┃• ➽ Opentime
-┃◈┃• ➽ closetime
-┃◈┃• ➽ kickall
-┃◈┃• ➽ kickall2
-┃◈┃• ➽ kickall3
-┃◈┃• ➽ add
-┃◈┃• ➽ remove
-┃◈┃• ➽ kick
-┃◈┃• ➽ promote
-┃◈┃• ➽ demote
-┃◈┃• ➽ dismiss
-┃◈┃• ➽ revoke
-┃◈┃• ➽ setgoodbye
-┃◈┃• ➽ setwelcome
-┃◈┃• ➽ delete
-┃◈┃• ➽ getpic
-┃◈┃• ➽ ginfo
-┃◈┃• ➽ disappear on
-┃◈┃• ➽ disappear off
-┃◈┃• ➽ disappear 7D,24H
-┃◈┃• ➽ allreq
-┃◈┃• ➽ updategname
-┃◈┃• ➽ updategdesc
-┃◈┃• ➽ joinrequests
-┃◈┃• ➽ senddm
-┃◈┃• ➽ nikal
-┃◈┃• ➽ close
-┃◈┃• ➽ open
-┃◈┃• ➽ opengc
-┃◈┃• ➽ closegc
-┃◈┃• ➽ invite
-┃◈┃• ➽ tag
-┃◈┃• ➽ hidetag
-┃◈┃• ➽ tagall
-┃◈┃• ➽ tagadmins
-┃◈╰─────────────────┈⊷
+╭━━〔*GROUP MENU* 〕━━┈⊷
+┃ ╭─────────────────·๏
+┃➽ grouplink
+┃➽ Opentime
+┃➽ closetime
+┃➽ kickall
+┃➽ kickall2
+┃➽ kickall3
+┃➽ add
+┃➽ remove
+┃➽ kick
+┃➽ promote
+┃➽ demote
+┃➽ dismiss
+┃➽ revoke
+┃➽ setgoodbye
+┃➽ setwelcome
+┃➽ delete
+┃➽ getpic
+┃➽ ginfo
+┃➽ disappear on
+┃➽ disappear off
+┃➽ disappear 7D,24H
+┃➽ allreq
+┃➽ updategname
+┃➽ updategdesc
+┃➽ joinrequests
+┃➽ senddm
+┃➽ nikal
+┃➽ close
+┃➽ open
+┃➽ opengc
+┃➽ closegc
+┃➽ invite
+┃➽ tag
+┃➽ hidetag
+┃➽ tagall
+┃➽ tagadmins
 ╰━━━━━━━━━━━━━━━━━━━┈⊷
-
-╭━━〔 🎭 *REACTIONS MENU* 〕━━┈⊷
+╭━━〔*REACTIONS MENU*〕━━┈⊷
 ┃◈╭─────────────────·๏
-┃◈┃• ➽ bully @tag
-┃◈┃• ➽ cuddle @tag
-┃◈┃• ➽ cry @tag
-┃◈┃• ➽ hug @tag
-┃◈┃• ➽ awoo @tag
-┃◈┃• ➽ kiss @tag
-┃◈┃• ➽ lick @tag
-┃◈┃• ➽ pat @tag
-┃◈┃• ➽ smug @tag
-┃◈┃• ➽ bonk @tag
-┃◈┃• ➽ yeet @tag
-┃◈┃• ➽ blush @tag
-┃◈┃• ➽ smile @tag
-┃◈┃• ➽ wave @tag
-┃◈┃• ➽ highfive @tag
-┃◈┃• ➽ handhold @tag
-┃◈┃• ➽ nom @tag
-┃◈┃• ➽ bite @tag
-┃◈┃• ➽ glomp @tag
-┃◈┃• ➽ slap @tag
-┃◈┃• ➽ kill @tag
-┃◈┃• ➽ happy @tag
-┃◈┃• ➽ wink @tag
-┃◈┃• ➽ poke @tag
-┃◈┃• ➽ dance @tag
-┃◈┃• ➽ cringe @tag
-┃◈╰─────────────────┈⊷
+┃➽ bully @tag
+┃➽ cuddle @tag
+┃➽ cry @tag
+┃➽ hug @tag
+┃➽ awoo @tag
+┃➽ kiss @tag
+┃➽ lick @tag
+┃➽ pat @tag
+┃➽ smug @tag
+┃➽ bonk @tag
+┃➽ yeet @tag
+┃➽ blush @tag
+┃➽ smile @tag
+┃➽ wave @tag
+┃➽ highfive @tag
+┃➽ handhold @tag
+┃➽ nom @tag
+┃➽ bite @tag
+┃➽ glomp @tag
+┃➽ slap @tag
+┃➽ kill @tag
+┃➽ happy @tag
+┃➽ wink @tag
+┃➽ poke @tag
+┃➽ dance @tag
+┃➽ cringe @tag
 ╰━━━━━━━━━━━━━━━━━━━┈⊷
-
-╭━━〔 🎨 *LOGO MAKER* 〕━━┈⊷
+╭━━〔*LOGO MAKER* 〕━━┈⊷
 ┃◈╭─────────────────·๏
 ┃◈┃• ➽ neonlight
 ┃◈┃• ➽ blackpink
