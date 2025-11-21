@@ -75,7 +75,7 @@ async (conn, mek, m, { from, participants, reply, isGroup, senderNumber, groupAd
                 forwardingScore: 999,
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                    newsletterJid: "120363401765045963@newsletter",
+                    newsletterJid: "undefined",
                     newsletterName: "TREND-X TECH",
                     serverMessageId: "",
                 }
