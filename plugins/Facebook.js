@@ -19,7 +19,7 @@ cmd({
     await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
     // Fetch video URL from the API
-    const apiUrl = `https://api.princetechn.com/api/download/facebook=${encodeURIComponent(url)}`;
+    const apiUrl = `https://api.princetechn.com/api/download/facebook?query=${encodeURIComponent(url)}`;
     const { data } = await axios.get(apiUrl);
 
     // Check if the API response is valid
