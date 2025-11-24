@@ -2,7 +2,7 @@ const { cmd } = require('../command');
 const axios = require('axios');
 
 cmd({
-    pattern: "tiktok2",
+    pattern: "tiktok",
     alias: ["ttdl", "tt", "tiktokdl"],
     desc: "Download TikTok video without watermark",
     category: "downloader",
@@ -16,7 +16,7 @@ async (conn, mek, m, { from, args, q, reply }) => {
         
         reply("Downloading video, please wait...");
         
-        const apiUrl = `https://delirius-apiofc.vercel.app/download/tiktok?url=${q}`;
+        const apiUrl = `https://api.princetechn.com/api/download/tiktok?apikey=prince&url=${q}`;
         const { data } = await axios.get(apiUrl);
         
         if (!data.status || !data.data) return reply("Failed to fetch TikTok video.");
