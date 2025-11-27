@@ -36,7 +36,7 @@ const getContextInfo = (title, url, thumb) => ({
 const customReplies = (q) => {
   const lower = q.toLowerCase();
   const today = moment().tz("Africa/Nairobi");
-  if (lower.includes("trend-x")) return "🔥 TREND-X is a Multi-Device WhatsApp Bot made by *Caseyrhodes*.";
+  if (lower.includes("trend-x")) return "🔥 TREND-X is a Multi-Device WhatsApp Bot made by *trendex king*.";
   if (lower.includes("trendex")) return "👑TREND-X is the official creator of the *trendex* WhatsApp bot.";
   if (lower.includes("channel")) return "📢 Official channel: https://whatsapp.com/channel/0029Vb6b7ZdF6sn4Vmjf2X1O";
   if (lower.includes("repo") || lower.includes("github")) return "🔗 GitHub repo: https://github.com/trendex2030/TREND-X";
