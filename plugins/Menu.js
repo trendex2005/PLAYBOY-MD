@@ -326,18 +326,17 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 ╰━━━━━━━━━━━━━━━━━━━┈⊷
 > ${config.DESCRIPTION}`;
 
-        await conn.sendMessage(
+               await conn.sendMessage(
             from,
             {
-                  image: { url: config.MENU_IMAGE_URL || 'https://files.catbox.moe/adymbp.jpg' },
-            
+                image: { url: config.MENU_IMAGE_URL || '10' },
                 caption: dec,
                 contextInfo: {
                     mentionedJid: [m.sender],
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                        newsletterJid: 'undefined',
+                        newsletterJid: '120363401765045963@newsletter',
                         newsletterName: config.BOT_NAME,
                         serverMessageId: 143
                     }
