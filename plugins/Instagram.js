@@ -3,7 +3,7 @@ const { cmd, commands } = require('../command');
 
 
 cmd({
-  pattern: "igimagedl",
+  pattern: "ig",
   alias: ["instagramimages", "igimages","igimage"],
   react: '📥',
   desc: "Download Instagram posts (images or videos).",
