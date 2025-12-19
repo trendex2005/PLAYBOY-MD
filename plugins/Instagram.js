@@ -22,7 +22,7 @@ cmd({
     await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
     // Prepare the API URL
-    const apiUrl = `https://api.fgmods.xyz/api/downloader/igdl?url=${encodeURIComponent(igUrl)}&apikey=E8sfLg9l`;
+    const apiUrl = `https://api.betabotz.eu.org/api/download/igdowloader?url=${encodeURIComponent(igUrl)}&apikey=E8sfLg9l`;
 
     // Call the API using GET
     const response = await axios.get(apiUrl);
