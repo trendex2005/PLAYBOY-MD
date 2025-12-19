@@ -23,7 +23,7 @@ cmd({
       react: { text: "⏳", key: m.key }
     });
 
-    const response = await axios.get(`https://api.giftedtech.co.ke/api/download/instadl?apikey=gifted&url=${q}`);
+    const response = await axios.get(`https://api.betabotz.eu.org/api/download/igdowloader?url=${q}`);
     const data = response.data;
 
     if (!data || data.status !== 200 || !data.downloadUrl) {
