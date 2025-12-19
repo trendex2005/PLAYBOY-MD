@@ -105,7 +105,7 @@ cmd({
 // VIDEO SECTION
 
 
-lite({
+cmd({
   pattern: "igvid",
   alias: ["igvideo","ig","instagram", "igdl"],
   react: '📥',
