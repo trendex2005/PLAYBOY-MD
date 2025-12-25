@@ -19,7 +19,7 @@ cmd({
     await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
     // Fetch video URL from the API
-    const apiUrl = `https://api.betabotz.eu.org/api/download/fbdown?url=${encodeURIComponent(q)}`;
+    const apiUrl = `https://www.velyn.biz.id/api/downloader/facebookdl?url=${encodeURIComponent(q)}`;
     const { data } = await axios.get(apiUrl);
 
     // Check if the API response is valid
@@ -31,7 +31,7 @@ cmd({
     const videoUrl = data.data.url;
     await conn.sendMessage(from, {
       video: { url: videoUrl },
-      caption: "📥 *Facebook Video Downloaded*\n\n- *Powered By Criss Vevo ✅*",
+      caption: "📥 *Facebook Video Downloaded*\n\n- *Powered By TRENDX ✅*",
     }, { quoted: m });
 
   } catch (error) {
