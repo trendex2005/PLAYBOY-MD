@@ -1,58 +1,41 @@
-const { cmd } = require('../command');
-const axios = require('axios');
+const axios = require("axios");
+const { cmd } = require("../command");
 
 cmd({
-    pattern: "facebook",
-    alias: ["fb", "fbdl", "facebookdl"],
-    desc: "Download Facebook video",
-    category: "downloader",
-    react: "📘",
-    filename: __filename
-},
-async (conn, mek, m, { from, q, reply }) => {
-    try {
-        if (!q) return reply("❌ Please provide a Facebook video link.");
-        if (!q.includes("facebook.com") && !q.includes("fb.watch"))
-            return reply("❌ Invalid Facebook link.");
-
-        reply("⏳ Downloading Facebook video...");
-
-        // ✅ WORKING endpoint
-        const apiUrl = `https://api.vreden.my.id/api/v1/download/facebook?url=${encodeURIComponent(q)}`;
-        const { data } = await axios.get(apiUrl);
-
-        if (!data?.status || !data?.result) {
-            return reply("❌ Failed to fetch Facebook video.");
-        }
-
-        // Try best quality first
-        const videoUrl =
-            data.result.hd ||
-            data.result.sd ||
-            data.result.url;
-
-        if (!videoUrl) {
-            return reply("❌ Video link not found.");
-        }
-
-        const caption =
-`📘 *Facebook Video*
-
-📖 *Title:* ${data.result.title || "No title"}
-🎥 *Quality:* ${data.result.hd ? "HD" : "SD"}`;
-
-        await conn.sendMessage(
-            from,
-            {
-                video: { url: videoUrl },
-                mimetype: "video/mp4",
-                caption
-            },
-            { quoted: mek }
-        );
-
-    } catch (e) {
-        console.error("Facebook Downloader Error:", e?.response?.data || e);
-        reply("❌ Facebook download failed.");
+  pattern: "fb",
+  alias: ["facebook", "fbdl"],
+  desc: "Download Facebook videos",
+  category: "download",
+  filename: __filename,
+  use: "<Facebook URL>",
+}, async (conn, m, store, { from, args, q, reply }) => {
+  try {
+    // Check if a URL is provided
+    if (!q || !q.startsWith("http")) {
+      return reply("*`Need a valid Facebook URL`*\n\nExample: `.fb https://www.facebook.com/...`");
     }
+
+    // Add a loading react
+    await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+
+    // Fetch video URL from the API
+    const apiUrl = `https://api.vreden.my.id/api/v1/download/facebook?url=${encodeURIComponent(q)}`;
+    const { data } = await axios.get(apiUrl);
+
+    // Check if the API response is valid
+    if (!data.status || !data.data || !data.data.url) {
+      return reply("❌ Failed to fetch the video. Please try another link.");
+    }
+
+    // Send the video to the user
+    const videoUrl = data.data.url;
+    await conn.sendMessage(from, {
+      video: { url: videoUrl },
+      caption: "📥 *Facebook Video Downloaded*\n\n- *Powered By TRENDEX AI ✅*",
+    }, { quoted: m });
+
+  } catch (error) {
+    console.error("Error:", error); // Log the error for debugging
+    reply("❌ Error fetching the video. Please try again.");
+  }
 });
