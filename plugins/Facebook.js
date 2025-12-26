@@ -3,7 +3,7 @@ const axios = require('axios');
 
 cmd({
     pattern: "facebook",
-    alias: ["fbdl", "fb", "facebookdl"],
+    alias: ["fb", "fbdl", "facebookdl"],
     desc: "Download Facebook video",
     category: "downloader",
     react: "📘",
@@ -15,35 +15,36 @@ async (conn, mek, m, { from, q, reply }) => {
         if (!q.includes("facebook.com") && !q.includes("fb.watch"))
             return reply("❌ Invalid Facebook link.");
 
-        reply("⏳ Downloading Facebook video, please wait...");
+        reply("⏳ Downloading Facebook video...");
 
-        const apiUrl = `https://delirius-apiofc.vercel.app/download/facebook?url=${encodeURIComponent(q)}`;
-        const res = await axios.get(apiUrl);
-        const data = res.data;
+        // ✅ WORKING endpoint
+        const apiUrl = `https://delirius-apiofc.vercel.app/api/facebook?url=${encodeURIComponent(q)}`;
+        const { data } = await axios.get(apiUrl);
 
-        if (!data?.status || !data?.data) {
+        if (!data?.status || !data?.result) {
             return reply("❌ Failed to fetch Facebook video.");
         }
 
-        const video =
-            data.data.hd ||
-            data.data.sd ||
-            data.data.video;
+        // Try best quality first
+        const videoUrl =
+            data.result.hd ||
+            data.result.sd ||
+            data.result.url;
 
-        if (!video) {
+        if (!videoUrl) {
             return reply("❌ Video link not found.");
         }
 
         const caption =
 `📘 *Facebook Video*
 
-📖 *Title:* ${data.data.title || "No title"}
-🎥 *Quality:* ${data.data.hd ? "HD" : "SD"}`;
+📖 *Title:* ${data.result.title || "No title"}
+🎥 *Quality:* ${data.result.hd ? "HD" : "SD"}`;
 
         await conn.sendMessage(
             from,
             {
-                video: { url: video },
+                video: { url: videoUrl },
                 mimetype: "video/mp4",
                 caption
             },
@@ -51,7 +52,7 @@ async (conn, mek, m, { from, q, reply }) => {
         );
 
     } catch (e) {
-        console.error("Facebook Downloader Error:", e);
-        reply("❌ Error downloading Facebook video.");
+        console.error("Facebook Downloader Error:", e?.response?.data || e);
+        reply("❌ Facebook download failed.");
     }
 });
