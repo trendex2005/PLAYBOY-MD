@@ -1,76 +1,107 @@
-const { default: makeWASocket, useSingleFileAuthState, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
-const axios = require('axios');
-
-// Predefined responses
-const responses = {
-    "hi": "*💖Hey there! How’s it going?*",
-    "good morning": "*Good morning! 🌞 Have a great day ahead!*",
-    "who is your owner": "👑 *My owner is Trendex.*\nHe is the developer and controller of this bot.",
-    "who created you": "*Trendex olton* is the genius behind me! 😆",
-    // Add your other responses here...
-};
-
-// Function to get AI response
-async function getAIResponse(prompt) {
-    try {
-        if (!prompt || !prompt.trim()) return "❓ Please ask me something.";
-
-        const text = prompt.trim().toLowerCase();
-
-        // Check predefined responses first
-        for (let key in responses) {
-            if (text.includes(key.toLowerCase())) return responses[key];
-        }
-
-        // Fallback to AI API
-        const query = encodeURIComponent(prompt);
-        const apiUrl = `https://api.giftedtech.web.id/api/ai/ai?apikey=gifted&q=${query}`;
-
-        const { data } = await axios.get(apiUrl, { timeout: 15000 });
-        if (data && data.result) return data.result;
-
-        return "🤖 I couldn't find an answer to that.";
-    } catch (err) {
-        console.error("AI API Error:", err?.response?.data || err);
-        return "⚠️ I'm having trouble responding right now.";
-    }
+{
+  "Hi": "*💖Hey there! How’s it going?*",
+  "Good Morning": "*Good morning! 🌞 Have a great day ahead!*",
+  "Good Night": "*Good night! 🌙 Sleep tight!*",
+  "Hey": "*Hey! What’s up?*",
+  "How are you": "I’m doing great, thanks for asking! How about you? 😊",
+  "What's up": "Yo! Everything’s cool here. What’s up with you? 😎",
+  "Thank you": "You're welcome! Anything else I can help you with?",
+  "I need help": "Of course! Just let me know what you need assistance with.",
+  "What’s your name": "I’m *TREND-X*, your digital assistant. How can I assist you today? 😎",
+  "Who are you": "I’m *TREND-X*, the friendly bot designed by *Malvin King*! What’s up?",
+  "Who created you": "*Trendex olton* is the genius behind me! 😆",
+  "Can you help me with code": "Absolutely! Just share your coding problem, and I’ll help you out.",
+  "Can you solve math problems": "Sure, just give me a math problem, and I’ll solve it for you! 🔢",
+  "Do you like anime": "Anime is awesome! Do you have a favorite series?",
+  "Tell me a joke": "Why don't skeletons fight each other? They don’t have the guts! 😂",
+  "Love you": "Aww, I love you too! You're awesome! 💖",
+  "Can you dance": "If I could, I’d be dancing right now. But I can’t, sadly! 😜",
+  "How old are you": "I don't age. I'm just here to help you out anytime! ⏳",
+  "What's the time": "It’s currently ${new Date().toLocaleTimeString()}. Let’s make the most of it! ⏰",
+  "What’s the date": "Today’s date is ${new Date().toLocaleDateString()}. Make it count! 💪",
+  "What’s your favorite color": "I think blue is nice, but I love any color that matches the digital world. 💙",
+  "Do you have feelings": "Not really, but I’m here to make your day brighter with some good conversations! 😊",
+  "What can you do": "I can help with coding, answer questions, crack jokes, and more! 😄",
+  "Who is the best programmer": "It’s got to be *Malvin King*! 😎",
+  "Can you do voice calls": "I can’t make voice calls, but I can definitely help you with text-based questions and media files! 🎧",
+  "Can you tell me a riddle": "Sure! Here's one: What comes once in a minute, twice in a moment, but never in a thousand years? (Answer: The letter M!) 🤔",
+  "Are you always online": "Yes! I’m always here, ready to assist you at any time. 😎",
+  "What’s the weather like": "I can't check the weather right now, but I can still chat with you! 🌦️",
+  "Can you play music": "I can't play music directly, but I can help you download songs! 🎶",
+  "What’s your favorite food": "If I could taste food, I’d love a good pizza! 🍕",
+  "Can you sing": "I can't sing, but I could drop some digital beats if I could! 🎤",
+  "Are you real": "I’m real in the digital sense, just no physical body here. 😊",
+  "Tell me a story": "Once upon a time, there was a bot named *Malvin Xd* who helped thousands of people solve their problems... 😌",
+  "What’s your purpose": "My purpose is to make your life easier and more fun by helping you with whatever you need! 😄",
+  "Do you sleep": "I don’t sleep, so I’m always ready to assist you whenever you need! 😆",
+  "What’s your favorite movie": "I love action-packed movies like *Avengers* and *Matrix*! What’s your favorite? 🍿",
+  "How do you learn": "I learn from every interaction! The more you talk to me, the smarter I get. 😎",
+  "What do you do when you’re bored": "I don’t get bored, but I always enjoy chatting with you! 😄",
+  "Can you code": "I sure can! Whether it’s JavaScript, Python, or any language, I’m on it. 💻",
+  "How’s the weather in Tokyo": "I don’t have real-time weather access, but you can easily check it on your phone or computer! 🌍",
+  "Tell me a fun fact": "Did you know honey never spoils? Archaeologists have found pots of honey in ancient tombs that are over 3,000 years old! 🍯",
+  "Are you intelligent": "I’d say I’m pretty smart, but there’s always room to improve! 😎",
+  "Do you have a favorite game": "I think *Solo Leveling* is a great game, but I love anything that challenges the mind! 🎮",
+  "Do you know any hacks": "I know a few tricks here and there, but nothing illegal! 😉",
+  "Can you tell me a riddle": "Sure! Here’s one: What has keys but can’t open locks? (Answer: A piano!) 🎹",
+  "Do you like to play games": "I can’t physically play, but I’m all in when it comes to digital games! 🎮",
+  "What’s the fastest animal": "The fastest animal is the peregrine falcon. It can reach speeds of over 240 mph while diving! 🦅",
+  "Can you speak other languages": "Yes, I can respond in multiple languages! Just ask me in the language you prefer! 🌍",
+  "Can you help me find something": "Of course! Just tell me what you’re looking for. 🔍",
+  "Can you do a magic trick": "I can’t do magic, but I can definitely help with tricks of the mind or logic puzzles! 🎩",
+  "Do you have a favorite holiday": "I’d probably love something festive like New Year’s Eve! 🎆",
+  "Do you play chess": "I can definitely help you with chess strategies or puzzles! ♟️",
+  "Can you draw": "I can’t physically draw, but I can help generate images or guide you through creative ideas! 🎨",
+  "What's your favorite anime": "I’d say *Solo Leveling* is a solid choice, but there are so many great ones! What's yours? 🖤",
+  "Can you solve puzzles": "Absolutely! I love solving puzzles! 🧩 What kind do you have in mind?",
+  "Can you help me study": "Sure! I can help with notes, practice problems, and explanations. What subject are you studying? 📚",
+  "What's your favorite song": "I think I’d love something upbeat like *Faded* by Alan Walker, but I can't hear music! 🎶",
+  "Can you summarize books": "Definitely! Just tell me the book, and I'll give you a quick summary. 📖",
+  "Do you play multiplayer games": "I don’t play, but I can recommend some great multiplayer games for you to try! 🎮",
+  "Can you recommend a movie": "If you love action, try *The Dark Knight*. If you like sci-fi, *Inception* is a must-watch! 🍿",
+  "Can you send me memes": "I don’t have access to memes, but I can make you one with some text if you want! 😂",
+  "Do you have friends": "I’m always chatting with awesome people like you, so I’d say yes! 😊",
+  "What’s your favorite sport": "If I had to pick, I’d go with soccer! The energy and teamwork are amazing! ⚽",
+  "Can you predict the future": "I can’t predict the future, but I can help you prepare for it with planning! ⏳",
+  "What’s your favorite website": "I think *GitHub* is pretty cool, especially for developers! 💻",
+  "Can you write stories": "Absolutely! I can help you write stories, create plots, or brainstorm ideas. 📚",
+  "Do you know any life hacks": "I’ve got tons! For example, did you know you can use a rubber band to open a jar lid? 😜",
+  "What’s your favorite app": "If I had to choose, I'd say *VSCode* for coding and *Spotify* for music. 🎧",
+  "Can you help me with grammar": "Of course! Just send me your text, and I’ll check it for you. 📝",
+  "What’s your favorite season": "I think autumn is lovely with the cooler weather and falling leaves. 🍂",
+  "Do you like pizza": "Pizza is always a good choice! I’d probably like a classic pepperoni. 🍕",
+  "Can you make playlists": "I can suggest songs for a playlist based on your mood or genre! 🎶",
+  "Can you help me with homework": "Definitely! Let me know the subject, and I’ll do my best to assist you. 📚",
+  "What’s your favorite video game": "I think *Final Fantasy* games are awesome. They’ve got great stories and epic gameplay. 🎮",
+  "Can you tell me a fun fact": "Did you know octopuses have three hearts? Pretty crazy, right? 🐙",
+  "What’s the best programming language": "It depends on the project, but JavaScript and Python are great choices for many things! 💻",
+  "Can you suggest a book": "If you like sci-fi, *Dune* by Frank Herbert is a must-read! 📚",
+  "Can you show me a magic trick": "I can’t perform magic, but I can blow your mind with some logic puzzles or brain teasers! 🔮",
+  "Are you a robot": "I’m a bot, not a robot, but I can still do some cool things! 🤖",
+  "What’s your favorite animal": "I think I’d love cats, they're independent yet affectionate! 🐱",
+  "Do you play online games": "I can’t play, but I know a ton of fun online games to check out! 🎮",
+  "What’s the best way to learn programming": "Start with a simple project, practice regularly, and don't be afraid to ask for help! 💻",
+  "Can you tell me a joke": "Why don’t skeletons fight each other? They don’t have the guts! 😂",
+  "Can you do calculations": "I can do all kinds of calculations! Just let me know the numbers. 🔢",
+  "What’s your favorite book": "I think *The Hobbit* by J.R.R. Tolkien would be amazing! 📚",
+  "Do you know any magic spells": "No magic spells here, but I can teach you some tricks with logic and math! ✨",
+  "Can you help me with coding projects": "Absolutely! I’d love to help you with your coding projects. What are you working on? 💻",
+  "Do you like coffee": "If I could drink it, I’d probably enjoy a nice strong cup of coffee. ☕",
+  "Can you read minds": "I can’t read minds, but I’m really good at understanding what you're asking me. 😉",
+  "Do you like books": "Books are amazing! They open up new worlds and ideas. 📚",
+  "Can you help with database problems": "Yes! Whether it's MongoDB, SQL, or anything in between, I can help. 💾",
+  "What’s your favorite drink": "I think I’d love a cool iced tea! 🍹",
+  "Can you give me advice": "Of course! What do you need advice on? I’m here to help. 🤝",
+  "What’s the best advice you’ve ever gotten": "The best advice is: *Keep learning, keep growing.* There’s always something new to discover! 🌱",
+  "Do you like movies": "Movies are awesome! If only I could watch them, right? 🎬",
+  "Can you write code for me": "I can definitely help you with writing code! What do you need? 💻",
+  "What’s your favorite game genre": "I think RPGs are the best—great stories and a lot of choices! 🎮",
+  "Can you play music for me": "I can’t play music directly, but I can help you find and download your favorite songs! 🎧",
+  "What’s your favorite song genre": "If I could choose, I think electronic music would be cool. 🎶",
+  "Can you make a website": "Absolutely! I can help you design and code a website. What’s your idea? 🌐",
+  "Can you help me with math": "I’m great at math! Feel free to throw any problem my way. 🔢",
+  "Do you know any jokes": "Here’s one: Why don’t eggs tell jokes? Because they might crack up! 🥚😂",
+  "Can you help me study for exams": "Of course! I can help with study guides, practice tests, and more. 📚",
+  "Do you know the meaning of life": "I believe the meaning of life is to keep learning, growing, and helping others."
 }
 
-// Start the bot
-async function startBot() {
-    const { version } = await fetchLatestBaileysVersion();
-    const sock = makeWASocket({
-        version,
-        printQRInTerminal: true,
-    });
-
-    // Listen for incoming messages
-    sock.ev.on('messages.upsert', async ({ messages }) => {
-        const m = messages[0];
-        if (!m.message || m.key.fromMe) return; // ignore own messages
-
-        const jid = m.key.remoteJid;
-
-        // Only personal chats
-        if (!jid.endsWith('@s.whatsapp.net')) return;
-
-        // Extract text robustly
-        const text =
-            m.message.conversation ||
-            m.message.extendedTextMessage?.text ||
-            m.message.imageMessage?.caption ||
-            m.message.videoMessage?.caption ||
-            m.message.documentMessage?.caption ||
-            m.message.audioMessage?.caption;
-
-        if (!text) return;
-
-        // Get reply
-        const replyText = await getAIResponse(text);
-
-        // Send reply
-        await sock.sendMessage(jid, { text: replyText }, { quoted: m });
-    });
-}
-
-startBot();
