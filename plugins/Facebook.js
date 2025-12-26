@@ -18,7 +18,7 @@ async (conn, mek, m, { from, q, reply }) => {
         reply("⏳ Fetching Facebook video...");
 
         // ✅ STABLE API
-        const api = `https://delirius-apiofc.vercel.app/download/facebook?url=${encodeURIComponent(q)}`;
+        const api = `https://api.vreden.my.id/api/v1/download/facebook?url=${encodeURIComponent(q)}`;
         const { data } = await axios.get(api);
 
         if (!data || !data.respon) {
