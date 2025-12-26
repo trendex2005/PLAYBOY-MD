@@ -1,11 +1,15 @@
 const axios = require("axios");
 
-// AI response function with owner override
-async function getAIResponse(prompt) {
+/**
+ * Get AI response with owner override
+ * @param {string} text
+ * @returns {Promise<string>}
+ */
+async function getAIResponse(text) {
     try {
-        if (!prompt || !prompt.trim()) return "❓ Please ask me something.";
+        if (!text || !text.trim()) return "❓ Please ask me something.";
 
-        const lower = prompt.trim().toLowerCase();
+        const lower = text.trim().toLowerCase();
 
         // Owner override
         if (
@@ -18,7 +22,7 @@ async function getAIResponse(prompt) {
         }
 
         // Call AI API
-        const query = encodeURIComponent(prompt);
+        const query = encodeURIComponent(text);
         const apiUrl = `https://api.giftedtech.web.id/api/ai/ai?apikey=gifted&q=${query}`;
         const { data } = await axios.get(apiUrl, { timeout: 15000 });
 
@@ -31,29 +35,35 @@ async function getAIResponse(prompt) {
     }
 }
 
-// Message handler for personal chats
+/**
+ * Handle incoming personal messages
+ * @param {import('@whiskeysockets/baileys').WAConnection} conn
+ * @param {import('@whiskeysockets/baileys').proto.WebMessageInfo} m
+ */
 async function handleMessage(conn, m) {
     try {
+        if (!m.message || m.key.fromMe) return;
+
         const jid = m.key.remoteJid;
 
-        // Only respond in personal chats
+        // Only personal chats
         if (!jid.endsWith("@s.whatsapp.net")) return;
 
-        // Extract message text
+        // Extract text from different message types
         const text =
-            m.message?.conversation ||
-            m.message?.extendedTextMessage?.text ||
-            m.message?.imageMessage?.caption ||
-            m.message?.videoMessage?.caption ||
-            m.message?.documentMessage?.caption ||
-            m.message?.audioMessage?.caption;
+            m.message.conversation ||
+            m.message.extendedTextMessage?.text ||
+            m.message.imageMessage?.caption ||
+            m.message.videoMessage?.caption ||
+            m.message.documentMessage?.caption ||
+            m.message.audioMessage?.caption;
 
         if (!text) return;
 
         // Get AI response
         const replyText = await getAIResponse(text);
 
-        // Send reply
+        // Send the reply
         await conn.sendMessage(jid, { text: replyText }, { quoted: m });
     } catch (err) {
         console.error("Error handling personal message:", err);
