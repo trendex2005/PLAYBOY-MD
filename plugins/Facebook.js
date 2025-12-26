@@ -3,7 +3,7 @@ const axios = require('axios');
 
 cmd({
     pattern: "facebook",
-    alias: ["fb", "fbdl", "facebookdl"],
+    alias: ["fb", "fbdl"],
     desc: "Download Facebook video",
     category: "downloader",
     react: "📘",
@@ -11,48 +11,40 @@ cmd({
 },
 async (conn, mek, m, { from, q, reply }) => {
     try {
-        if (!q) return reply("❌ Please provide a Facebook video link.");
+        if (!q) return reply("❌ Provide a Facebook link");
         if (!q.includes("facebook.com") && !q.includes("fb.watch"))
-            return reply("❌ Invalid Facebook link.");
+            return reply("❌ Invalid Facebook link");
 
-        reply("⏳ Downloading Facebook video...");
+        reply("⏳ Fetching Facebook video...");
 
-        // ✅ WORKING endpoint
-        const apiUrl = `https://delirius-apiofc.vercel.app/api/facebook?url=${encodeURIComponent(q)}`;
-        const { data } = await axios.get(apiUrl);
+        // ✅ STABLE API
+        const api = `https://api.akuari.my.id/downloader/fbdl?link=${encodeURIComponent(q)}`;
+        const { data } = await axios.get(api);
 
-        if (!data?.status || !data?.result) {
-            return reply("❌ Failed to fetch Facebook video.");
+        if (!data || !data.respon) {
+            return reply("❌ Failed to fetch video");
         }
 
-        // Try best quality first
         const videoUrl =
-            data.result.hd ||
-            data.result.sd ||
-            data.result.url;
+            data.respon.video_hd ||
+            data.respon.video_sd;
 
         if (!videoUrl) {
-            return reply("❌ Video link not found.");
+            return reply("❌ No downloadable video found");
         }
-
-        const caption =
-`📘 *Facebook Video*
-
-📖 *Title:* ${data.result.title || "No title"}
-🎥 *Quality:* ${data.result.hd ? "HD" : "SD"}`;
 
         await conn.sendMessage(
             from,
             {
                 video: { url: videoUrl },
                 mimetype: "video/mp4",
-                caption
+                caption: "📘 *Facebook Video*"
             },
             { quoted: mek }
         );
 
-    } catch (e) {
-        console.error("Facebook Downloader Error:", e?.response?.data || e);
-        reply("❌ Facebook download failed.");
+    } catch (err) {
+        console.error("FB ERROR:", err?.response?.data || err);
+        reply("❌ Facebook download failed (blocked by FB)");
     }
 });
