@@ -3,7 +3,7 @@ const axios = require('axios');
 
 cmd({
     pattern: "facebook",
-    alias: ["fb", "fbdl"],
+    alias: ["fb", "fbdl", "facebookdl"],
     desc: "Download Facebook video",
     category: "downloader",
     react: "📘",
@@ -11,40 +11,48 @@ cmd({
 },
 async (conn, mek, m, { from, q, reply }) => {
     try {
-        if (!q) return reply("❌ Provide a Facebook link");
+        if (!q) return reply("❌ Please provide a Facebook video link.");
         if (!q.includes("facebook.com") && !q.includes("fb.watch"))
-            return reply("❌ Invalid Facebook link");
+            return reply("❌ Invalid Facebook link.");
 
-        reply("⏳ Fetching Facebook video...");
+        reply("⏳ Downloading Facebook video...");
 
-        // ✅ STABLE API
-        const api = `https://api.vreden.my.id/api/v1/download/facebook?url=${encodeURIComponent(q)}`;
-        const { data } = await axios.get(api);
+        // ✅ WORKING endpoint
+        const apiUrl = `https://api.vreden.my.id/api/v1/download/facebook?url=${encodeURIComponent(q)}`;
+        const { data } = await axios.get(apiUrl);
 
-        if (!data || !data.respon) {
-            return reply("❌ Failed to fetch video");
+        if (!data?.status || !data?.result) {
+            return reply("❌ Failed to fetch Facebook video.");
         }
 
+        // Try best quality first
         const videoUrl =
-            data.respon.video_hd ||
-            data.respon.video_sd;
+            data.result.hd ||
+            data.result.sd ||
+            data.result.url;
 
         if (!videoUrl) {
-            return reply("❌ No downloadable video found");
+            return reply("❌ Video link not found.");
         }
+
+        const caption =
+`📘 *Facebook Video*
+
+📖 *Title:* ${data.result.title || "No title"}
+🎥 *Quality:* ${data.result.hd ? "HD" : "SD"}`;
 
         await conn.sendMessage(
             from,
             {
                 video: { url: videoUrl },
                 mimetype: "video/mp4",
-                caption: "📘 *Facebook Video*"
+                caption
             },
             { quoted: mek }
         );
 
-    } catch (err) {
-        console.error("FB ERROR:", err?.response?.data || err);
-        reply("❌ Facebook download failed (blocked by FB)");
+    } catch (e) {
+        console.error("Facebook Downloader Error:", e?.response?.data || e);
+        reply("❌ Facebook download failed.");
     }
 });
