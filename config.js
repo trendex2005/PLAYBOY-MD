@@ -32,6 +32,8 @@ ANTI_LINK: process.env.ANTI_LINK || "false",
 // make anti link true,false for groups 
 MENTION_REPLY: process.env.MENTION_REPLY || "false",
 // make true if want auto voice reply if someone menetion you 
+    MENU_IMAGE_URL: process.env.MENU_IMAGE_URL || "https://files.catbox.moe/j2h8dg.jpg",
+
 
 // add custom menu and mention reply image url
 PREFIX: process.env.PREFIX || ".",
@@ -57,7 +59,7 @@ OWNER_NAME: process.env.OWNER_NAME || "TRENDEX",
 // add bot owner name
 DESCRIPTION: process.env.DESCRIPTION || "*© POWERED TRENDEX KING*",
 // add bot owner name    
-ALIVE_IMG: process.env.ALIVE_IMG || "https://files.catbox.moe/adymbp.jpg",
+ALIVE_IMG: process.env.ALIVE_IMG || "https://files.catbox.moe/j2h8dg.jpg",
 // add img for alive msg
 LIVE_MSG: process.env.LIVE_MSG || "> Powered by *TREND-X TECH*⚡",
 // add alive msg here 
