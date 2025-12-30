@@ -461,7 +461,7 @@ cmd({
 });
 
 cmd({
-  pattern: "antilinkkick",
+  pattern: "antilink kick",
   alias: ["kicklink"],
   desc: "Enable or disable ANTI_LINK_KICK in groups",
   category: "group",
@@ -490,7 +490,7 @@ cmd({
 
 cmd({
   pattern: "deletelink",
-  alias: ["antilinkdelete"],
+  alias: ["antilink delete"],
   desc: "Enable or disable DELETE_LINKS in groups",
   category: "group",
   react: "❌",
