@@ -28,7 +28,7 @@ ADMIN_EVENTS: process.env.ADMIN_EVENTS || "true",
  LINK_WHITELIST: "youtube.com,github.com", 
     LINK_ACTION:  "mute", // "kick", "mute", or "none"
     LINK_WARN_LIMIT: 3, // Number of warnings before action
-ANTI_LINK: process.env.ANTI_LINK || "false",
+ANTI_LINK: process.env.ANTI_LINK || "true",
 // make anti link true,false for groups 
 MENTION_REPLY: process.env.MENTION_REPLY || "false",
 // make true if want auto voice reply if someone menetion you 
