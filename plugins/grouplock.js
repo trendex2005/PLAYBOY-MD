@@ -1,41 +1,78 @@
-cmd({
-    pattern: "open",
-    react: "🔓",
-    desc: "Open group immediately",
-    category: "group",
-    use: '.open',
-    filename: __filename
-}, async (conn, mek, m, { from, isGroup, isAdmins, reply }) => {
-    try {
-        if (!isGroup) return reply(ONLGROUP)
-        if (!isAdmins) return reply(ADMIN)
+const config = require('../config')
+const { cmd, commands } = require('../command')
 
-        await conn.groupSettingUpdate(from, 'not_announcement')
-        reply(`*OPEN GROUP* ✅\nMembers can now send messages 🔓`)
-        await conn.sendMessage(from, { react: { text: `✅`, key: mek.key }})
-    } catch (e) {
-        reply('*Error !!*')
-        l(e)
-    }
+cmd({
+    pattern: "opentime",
+    react: "🔖",
+    desc: "To open group to a time",
+    category: "group",
+    use: '.opentime',
+    filename: __filename
+},
+async(conn, mek, m,{from, prefix, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply}) => {
+try{   
+if (!isGroup) return reply(ONLGROUP)
+if (!isAdmins) return reply(ADMIN)	
+  if (args[1] == 'second') {
+                    var timer = args[0] * `1000`
+                } else if (args[1] == 'minute') {
+                    var timer = args[0] * `60000`
+                } else if (args[1] == 'hour') {
+                    var timer = args[0] * `3600000`
+                } else if (args[1] == 'day') {
+                    var timer = args[0] * `86400000`
+                } else {
+                    return reply('*select:*\nsecond\nminute\nhour\n\n*example*\n10 second')
+                }
+                reply(`Open time ${q} starting from now`)
+                setTimeout(() => {
+                    var nomor = mek.participant
+                    const open = `*OPEN TIME* THE GROUP WAS OPENED BY TREND-X TO APPROVED ADMIN\n NOW MEMBERS CAN SEND MESSAGES 🔓`
+                    conn.groupSettingUpdate(from, 'not_announcement')
+                    reply(open)
+                }, timer)
+await conn.sendMessage(from, { react: { text: `✅`, key: mek.key }}) 
+} catch (e) {
+reply('*Error !!*')
+l(e)
+}
 })
 
 cmd({
-    pattern: "close",
-    react: "🔐",
-    desc: "Close group immediately",
+    pattern: "closetime",
+    react: "🔖",
+    desc: "To close group to a time",
     category: "group",
-    use: '.close',
+    use: '.closstime',
     filename: __filename
-}, async (conn, mek, m, { from, isGroup, isAdmins, reply }) => {
-    try {
-        if (!isGroup) return reply(ONLGROUP)
-        if (!isAdmins) return reply(ADMIN)
-
-        await conn.groupSettingUpdate(from, 'announcement')
-        reply(`*CLOSE GROUP* ✅\nOnly admins can send messages 🔐`)
-        await conn.sendMessage(from, { react: { text: `✅`, key: mek.key }})
-    } catch (e) {
-        reply('*Error !!*')
-        l(e)
-    }
+},
+async(conn, mek, m,{from, prefix, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply}) => {
+try{   
+if (!isGroup) return reply(ONLGROUP)
+if (!isAdmins) return reply(ADMIN)	
+                if (args[1] == 'second') {
+                    var timer = args[0] * `1000`
+                } else if (args[1] == 'minute') {
+                    var timer = args[0] * `60000`
+                } else if (args[1] == 'hour') {
+                    var timer = args[0] * `3600000`
+                } else if (args[1] == 'day') {
+                    var timer = args[0] * `86400000`
+                } else {
+                    return reply('*select:*\nsecond\nminute\nhour\n\n*Example*\n10 second')
+                }
+                reply(`Close time ${q} starting from now`)
+                setTimeout(() => {
+                    var nomor = m.participant
+                    const close = `*CLOSE TIME* GROUP CLOSED BY TREND-X AT APPROVED ADMIN\nNOW ONLY ADMIN CAN SEND MESSAGES 🔐`
+                    conn.groupSettingUpdate(from, 'announcement')
+                    reply(close)
+                }, timer)
+await conn.sendMessage(from, { react: { text: `✅`, key: mek.key }}) 
+} catch (e) {
+reply('*Error !!*')
+l(e)
+}
 })
+
+
