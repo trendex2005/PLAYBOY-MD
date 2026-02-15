@@ -1,4 +1,4 @@
-1// plugins/play.js
+// plugins/play.js
 const axios = require("axios");
 const { cmd } = require("../command");
 
