@@ -20,7 +20,7 @@ cmd(
     try {
       await reply("🔎 Searching for your song... (this may take a while)");
 
-      const apiUrl = `https://api.vreden.my.id/api/v1/download/play/video?query=${encodeURIComponent(
+      const apiUrl = `https://okatsu-rolezapiiz.vercel.app/downloader/ytmp3?url=${encodeURIComponent(
         text
       )}`;
 
