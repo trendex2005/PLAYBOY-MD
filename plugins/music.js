@@ -1,4 +1,4 @@
-// plugins/play.js
+1// plugins/play.js
 const axios = require("axios");
 const { cmd } = require("../command");
 
@@ -20,7 +20,7 @@ cmd(
     try {
       await reply("🔎 Searching for your song... (this may take a while)");
 
-      const apiUrl = `https://okatsu-rolezapiiz.vercel.app/downloader/ytmp3?url=${encodeURIComponent(
+      const apiUrl = `https://okatsu-rolezapiiz.vercel.app/downloader/ytmp3?=${encodeURIComponent(
         text
       )}`;
 
