@@ -20,7 +20,7 @@ cmd(
     try {
       await reply("🔎 Searching for your song... (this may take a while)");
 
-      const apiUrl = `https://okatsu-rolezapiiz.vercel.app/downloader/ytmp3?=${encodeURIComponent(
+      const apiUrl = `https://api.giftedtech.co.ke/api/download/ytmp3?apikey=gifted&url=https%3A%2F%2Fyoutu.be%2FqF-JLqKtr2Q%3Ffeature%3Dshared&quality=128kbps=${encodeURIComponent(
         text
       )}`;
 
