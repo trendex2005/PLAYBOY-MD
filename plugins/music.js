@@ -20,7 +20,7 @@ cmd(
     try {
       await reply("🔎 Searching for your song... (this may take a while)");
 
-      const apiUrl = `https://weeb-api.vercel.app/genius?query=${encodeURIComponent(
+      const apiUrl = `https://api.vreden.my.id/api/v1/download/play/audio?query=${encodeURIComponent(
         text
       )}`;
 
