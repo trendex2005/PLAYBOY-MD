@@ -20,7 +20,7 @@ cmd(
     try {
       await reply("🔎 Searching for your song... (this may take a while)");
 
-      const apiUrl = `https://yt-dl.officialhectormanuel.workers.dev/?url=${encodeURIComponent(
+      const apiUrl = `https://api.bk9.dev/download/ytmp3?url=${encodeURIComponent(
         text
       )}`;
 
