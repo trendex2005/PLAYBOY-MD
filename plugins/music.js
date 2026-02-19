@@ -5,49 +5,58 @@ const { cmd } = require("../command");
 cmd(
   {
     pattern: "play",
-    alias: ["song"],
-    desc: "Download song via API",
+    alias: ["song", "ytplay"],
+    desc: "Download YouTube MP3 using bk9 API",
     category: "downloader",
     filename: __filename,
   },
   async (malvin, mek, m, { args, reply }) => {
-    const text = args.join(" ");
-    if (!text) return reply("❌ Enter song name!");
+    const query = args.join(" ");
+
+    if (!query)
+      return reply("❌ Please enter a song name!\n\nExample: .play Alone");
 
     try {
-      await reply("🔎 Searching...");
+      await reply("🔎 Searching for song...");
 
-      // Step 1: Search YouTube
-      const search = await yts(text);
+      // 1️⃣ Search YouTube
+      const search = await yts(query);
       const video = search.videos[0];
+
       if (!video) return reply("❌ Song not found.");
 
       await reply("⬇️ Converting to MP3...");
 
-      // Step 2: Use API converter
-      const apiUrl = `https://api.bk9.dev/download/ytmp3?url=${video.url}`;
+      // 2️⃣ Send video URL to bk9 API
+      const apiUrl = `https://api.bk9.dev/download/ytmp3?url=${encodeURIComponent(
+        video.url
+      )}`;
 
-      const res = await axios.get(apiUrl);
+      const res = await axios.get(apiUrl, { timeout: 60000 });
       const data = res.data;
 
-      if (!data.status) return reply("❌ API failed.");
+      console.log("BK9 RESPONSE:", data); // debug
 
-      const downloadUrl = data.result.download.url;
+      if (!data || !data.url)
+        return reply("❌ API failed to return audio.");
 
-      // Send info
+      const downloadUrl = data.url;
+
+      // 3️⃣ Send thumbnail + info
       await malvin.sendMessage(
         m.chat,
         {
           image: { url: video.thumbnail },
           caption:
             `🎶 *Now Playing*\n\n` +
-            `🎵 ${video.title}\n` +
-            `⏱ ${video.timestamp}`,
+            `🎵 *Title:* ${video.title}\n` +
+            `⏱ *Duration:* ${video.timestamp}\n` +
+            `🔗 *YouTube:* ${video.url}`,
         },
         { quoted: mek }
       );
 
-      // Send audio
+      // 4️⃣ Send audio
       await malvin.sendMessage(
         m.chat,
         {
@@ -57,9 +66,10 @@ cmd(
         },
         { quoted: mek }
       );
+
     } catch (err) {
-      console.log(err.message);
-      reply("⚠️ API Error. Try again later.");
+      console.error("PLAY ERROR:", err.response?.data || err.message);
+      reply("⚠️ Failed to download song. Try another song.");
     }
   }
 );
