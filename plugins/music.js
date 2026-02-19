@@ -25,7 +25,7 @@ cmd(
       await reply("⬇️ Converting to MP3...");
 
       // Step 2: Use API converter
-      const apiUrl = `https://api.zenzxz.my.id/api/downloader/ytmp3?url=${video.url}`;
+      const apiUrl = `https://api.giftedtech.co.ke/api/download/ytmp3?apikey=gifted&url=${video.url}`;
 
       const res = await axios.get(apiUrl);
       const data = res.data;
