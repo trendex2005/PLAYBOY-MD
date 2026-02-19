@@ -1,67 +1,65 @@
-const ytdl = require("ytdl-core");
+const axios = require("axios");
 const yts = require("yt-search");
 const { cmd } = require("../command");
 
 cmd(
   {
     pattern: "play",
-    alias: ["song", "ytplay"],
-    desc: "Download song from YouTube",
+    alias: ["song"],
+    desc: "Download song via API",
     category: "downloader",
     filename: __filename,
   },
   async (malvin, mek, m, { args, reply }) => {
-    const text =
-      (args && args.length ? args.join(" ") : null) ||
-      (m?.quoted?.text ? m.quoted.text : null);
-
-    if (!text)
-      return reply("❌ Please enter a song name!\n\nExample: .play Alone");
+    const text = args.join(" ");
+    if (!text) return reply("❌ Enter song name!");
 
     try {
-      await reply("🔎 Searching YouTube...");
+      await reply("🔎 Searching...");
 
-      // 🔎 Search YouTube
+      // Step 1: Search YouTube
       const search = await yts(text);
       const video = search.videos[0];
-
       if (!video) return reply("❌ Song not found.");
 
-      await reply("⬇️ Downloading audio...");
+      await reply("⬇️ Converting to MP3...");
 
-      const stream = ytdl(video.url, {
-        filter: "audioonly",
-        quality: "highestaudio",
-      });
+      // Step 2: Use API converter
+      const apiUrl = `https://api.zenzxz.my.id/api/downloader/ytmp3?url=${video.url}`;
 
-      // 🖼 Send Thumbnail + Info
+      const res = await axios.get(apiUrl);
+      const data = res.data;
+
+      if (!data.status) return reply("❌ API failed.");
+
+      const downloadUrl = data.result.download.url;
+
+      // Send info
       await malvin.sendMessage(
         m.chat,
         {
           image: { url: video.thumbnail },
           caption:
-            `🎶 *Now Playing — TREND-X AI*\n\n` +
-            `🎵 *Title:* ${video.title}\n` +
-            `⏱ *Duration:* ${video.timestamp}\n` +
-            `📺 *Views:* ${video.views}\n` +
-            `🔗 *URL:* ${video.url}`,
+            `🎶 *Now Playing*\n\n` +
+            `🎵 ${video.title}\n` +
+            `⏱ ${video.timestamp}`,
         },
         { quoted: mek }
       );
 
-      // 🔊 Send Audio
+      // Send audio
       await malvin.sendMessage(
         m.chat,
         {
-          audio: stream,
+          audio: { url: downloadUrl },
           mimetype: "audio/mpeg",
           fileName: `${video.title}.mp3`,
         },
         { quoted: mek }
       );
     } catch (err) {
-      console.error("PLAY ERROR:", err);
-      reply("⚠️ Failed to download song. Try another song.");
+      console.log(err.message);
+      reply("⚠️ API Error. Try again later.");
     }
   }
 );
