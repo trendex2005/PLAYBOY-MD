@@ -20,7 +20,7 @@ cmd(
     try {
       await reply("🔎 Searching for your song... (this may take a while)");
 
-      const apiUrl = `https://api.giftedtech.co.ke/api/download/ytmp3?apikey=gifted&url=${encodeURIComponent(
+      const apiUrl = `https://api.giftedtech.co.ke/api/download/ytmp3?apikey=gifted&text=${encodeURIComponent(
         text
       )}`;
 
