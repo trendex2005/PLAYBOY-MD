@@ -15,12 +15,14 @@ cmd(
       (args && args.length ? args.join(" ") : null) ||
       (m?.quoted?.text ? m.quoted.text : null);
 
-    if (!text) return reply("❌ Please enter a song name!\n\nExample: .play Alone");
+    if (!text)
+      return reply("❌ Please enter a song name!\n\nExample: .play Alone");
 
     try {
-      await reply("🔎 Searching for your song... (this may take a while)");
+      await reply("🔎 Searching & downloading... please wait");
 
-      const apiUrl = `https://api.giftedtech.co.ke/api/download/ytmp3=${encodeURIComponent(
+      // ✅ Correct API URL
+      const apiUrl = `https://api.giftedtech.co.ke/api/download/ytmp3?apikey=gifted&url=${encodeURIComponent(
         text
       )}`;
 
@@ -32,18 +34,19 @@ cmd(
       }
 
       const result = data.result;
-      const audioUrl = result.downloadUrl; // ✅ this is the correct field
+      const audioUrl = result.downloadUrl;
 
       if (!audioUrl) {
         return reply("❌ API didn’t return any audio link.");
       }
 
       const title = result.title || text;
-      const duration = result.duration ? `${result.duration}s` : "Unknown";
+      const duration = result.duration || "Unknown";
       const thumbnail =
         result.thumbnail ||
-        (result.videoId ? `https://img.youtube.com/vi/${result.videoId}/hqdefault.jpg` : null) ||
-        "https://i.ibb.co/4pDNDk1/music.jpg";
+        (result.videoId
+          ? `https://img.youtube.com/vi/${result.videoId}/hqdefault.jpg`
+          : "https://i.ibb.co/4pDNDk1/music.jpg");
 
       // Send song info
       await malvin.sendMessage(
@@ -53,9 +56,8 @@ cmd(
           caption:
             `🎶 *Now Playing* — TREND-X AI\n\n` +
             `🎵 *Title:* ${title}\n` +
-            `⏱ *Duration:* ${duration}\n` +
-            `📺 *YouTube:* ${result.videoUrl || "Unknown"}\n\n` +
-            `🔥 Brought to you by *TRENDEX AI*`,
+            `⏱ *Duration:* ${duration}\n\n` +
+            `🔥 Powered by TRENDEX AI`,
         },
         { quoted: mek }
       );
@@ -72,7 +74,7 @@ cmd(
       );
     } catch (err) {
       console.error("play.js error:", err.message);
-      reply(`⚠️ Error fetching song: ${err.message}`);
+      reply("⚠️ Error fetching song. Try again later.");
     }
   }
 );
