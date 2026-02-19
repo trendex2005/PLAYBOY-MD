@@ -20,7 +20,7 @@ cmd(
     try {
       await reply("🔎 Searching for your song... (this may take a while)");
 
-      const apiUrl = `https://api.betabotz.eu.org/api/download/yt?url=${encodeURIComponent(
+      const apiUrl = `https://api.betabotz.eu.org/api/download/yt?query=${encodeURIComponent(
         text
       )}`;
 
