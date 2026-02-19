@@ -1,11 +1,12 @@
-const axios = require("axios");
+const ytdl = require("ytdl-core");
+const yts = require("yt-search");
 const { cmd } = require("../command");
 
 cmd(
   {
     pattern: "play",
     alias: ["song", "ytplay"],
-    desc: "Download and play music from YouTube",
+    desc: "Download song from YouTube",
     category: "downloader",
     filename: __filename,
   },
@@ -18,78 +19,49 @@ cmd(
       return reply("❌ Please enter a song name!\n\nExample: .play Alone");
 
     try {
-      await reply("🔎 Searching for your song... Please wait");
+      await reply("🔎 Searching YouTube...");
 
-      // 🔎 STEP 1: Search YouTube
-      const searchApi = `https://api.giftedtech.co.ke/api/search/ytsearch?apikey=gifted&query=${encodeURIComponent(
-        text
-      )}`;
+      // 🔎 Search YouTube
+      const search = await yts(text);
+      const video = search.videos[0];
 
-      const searchRes = await axios.get(searchApi, { timeout: 60000 });
-      const searchData = searchRes.data;
+      if (!video) return reply("❌ Song not found.");
 
-      if (!searchData || !searchData.result || !searchData.result[0]) {
-        return reply("❌ Song not found.");
-      }
+      await reply("⬇️ Downloading audio...");
 
-      const video = searchData.result[0];
-      const videoUrl = video.url;
+      const stream = ytdl(video.url, {
+        filter: "audioonly",
+        quality: "highestaudio",
+      });
 
-      // 🎵 STEP 2: Download MP3
-      const downloadApi = `https://api.giftedtech.co.ke/api/download/ytmp3?apikey=gifted&url=${encodeURIComponent(
-        videoUrl
-      )}`;
-
-      const res = await axios.get(downloadApi, { timeout: 60000 });
-      const data = res.data;
-
-      if (!data || !data.result || !data.result.downloadUrl) {
-        return reply("❌ Failed to download audio.");
-      }
-
-      const audioUrl = data.result.downloadUrl;
-      const title = data.result.title || video.title || text;
-      const duration = data.result.duration || video.duration || "Unknown";
-      const thumbnail =
-        data.result.thumbnail ||
-        video.thumbnail ||
-        `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`;
-
-      // 🖼 Send Song Info
+      // 🖼 Send Thumbnail + Info
       await malvin.sendMessage(
         m.chat,
         {
-          image: { url: thumbnail },
+          image: { url: video.thumbnail },
           caption:
             `🎶 *Now Playing — TREND-X AI*\n\n` +
-            `🎵 *Title:* ${title}\n` +
-            `⏱ *Duration:* ${duration}\n` +
-            `📺 *YouTube:* ${videoUrl}\n\n` +
-            `🔥 Powered by TRENDEX AI`,
+            `🎵 *Title:* ${video.title}\n` +
+            `⏱ *Duration:* ${video.timestamp}\n` +
+            `📺 *Views:* ${video.views}\n` +
+            `🔗 *URL:* ${video.url}`,
         },
         { quoted: mek }
       );
 
-      // 🔊 Send MP3
+      // 🔊 Send Audio
       await malvin.sendMessage(
         m.chat,
         {
-          audio: { url: audioUrl },
+          audio: stream,
           mimetype: "audio/mpeg",
-          fileName: `${title}.mp3`,
+          fileName: `${video.title}.mp3`,
         },
         { quoted: mek }
       );
     } catch (err) {
-      console.error("PLAY ERROR:", err.response?.data || err.message);
-
-      reply(
-        `⚠️ Error fetching song:\n${
-          err.response?.data
-            ? JSON.stringify(err.response.data)
-            : err.message
-        }`
-      );
+      console.error("PLAY ERROR:", err);
+      reply("⚠️ Failed to download song. Try another song.");
     }
   }
 );
