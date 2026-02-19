@@ -20,7 +20,7 @@ cmd(
     try {
       await reply("🔎 Searching for your song... (this may take a while)");
 
-      const apiUrl = `https://izumiiiiiiii.dpdns.org/downloader/youtube?url=${encodeURIComponent(
+      const apiUrl = `https://api.giftedtech.co.ke/api/search/yts?apikey=gifted&query=${encodeURIComponent(
         text
       )}`;
 
