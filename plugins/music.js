@@ -1,4 +1,3 @@
-// plugins/play.js
 const axios = require("axios");
 const { cmd } = require("../command");
 
@@ -6,7 +5,7 @@ cmd(
   {
     pattern: "play",
     alias: ["song", "ytplay"],
-    desc: "Play music from YouTube",
+    desc: "Download and play music from YouTube",
     category: "downloader",
     filename: __filename,
   },
@@ -19,50 +18,59 @@ cmd(
       return reply("❌ Please enter a song name!\n\nExample: .play Alone");
 
     try {
-      await reply("🔎 Searching & downloading... please wait");
+      await reply("🔎 Searching for your song... Please wait");
 
-      // ✅ Correct API URL
-      const apiUrl = `https://api.giftedtech.co.ke/api/download/ytmp3?apikey=gifted&url=${encodeURIComponent(
+      // 🔎 STEP 1: Search YouTube
+      const searchApi = `https://api.giftedtech.co.ke/api/search/ytsearch?apikey=gifted&query=${encodeURIComponent(
         text
       )}`;
 
-      const res = await axios.get(apiUrl, { timeout: 60000 });
+      const searchRes = await axios.get(searchApi, { timeout: 60000 });
+      const searchData = searchRes.data;
+
+      if (!searchData || !searchData.result || !searchData.result[0]) {
+        return reply("❌ Song not found.");
+      }
+
+      const video = searchData.result[0];
+      const videoUrl = video.url;
+
+      // 🎵 STEP 2: Download MP3
+      const downloadApi = `https://api.giftedtech.co.ke/api/download/ytmp3?apikey=gifted&url=${encodeURIComponent(
+        videoUrl
+      )}`;
+
+      const res = await axios.get(downloadApi, { timeout: 60000 });
       const data = res.data;
 
-      if (!data || data.status === false || !data.result) {
-        return reply("❌ Couldn't find that song.");
+      if (!data || !data.result || !data.result.downloadUrl) {
+        return reply("❌ Failed to download audio.");
       }
 
-      const result = data.result;
-      const audioUrl = result.downloadUrl;
-
-      if (!audioUrl) {
-        return reply("❌ API didn’t return any audio link.");
-      }
-
-      const title = result.title || text;
-      const duration = result.duration || "Unknown";
+      const audioUrl = data.result.downloadUrl;
+      const title = data.result.title || video.title || text;
+      const duration = data.result.duration || video.duration || "Unknown";
       const thumbnail =
-        result.thumbnail ||
-        (result.videoId
-          ? `https://img.youtube.com/vi/${result.videoId}/hqdefault.jpg`
-          : "https://i.ibb.co/4pDNDk1/music.jpg");
+        data.result.thumbnail ||
+        video.thumbnail ||
+        `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`;
 
-      // Send song info
+      // 🖼 Send Song Info
       await malvin.sendMessage(
         m.chat,
         {
           image: { url: thumbnail },
           caption:
-            `🎶 *Now Playing* — TREND-X AI\n\n` +
+            `🎶 *Now Playing — TREND-X AI*\n\n` +
             `🎵 *Title:* ${title}\n` +
-            `⏱ *Duration:* ${duration}\n\n` +
+            `⏱ *Duration:* ${duration}\n` +
+            `📺 *YouTube:* ${videoUrl}\n\n` +
             `🔥 Powered by TRENDEX AI`,
         },
         { quoted: mek }
       );
 
-      // Send MP3
+      // 🔊 Send MP3
       await malvin.sendMessage(
         m.chat,
         {
@@ -73,8 +81,15 @@ cmd(
         { quoted: mek }
       );
     } catch (err) {
-      console.error("play.js error:", err.message);
-      reply("⚠️ Error fetching song. Try again later.");
+      console.error("PLAY ERROR:", err.response?.data || err.message);
+
+      reply(
+        `⚠️ Error fetching song:\n${
+          err.response?.data
+            ? JSON.stringify(err.response.data)
+            : err.message
+        }`
+      );
     }
   }
 );
