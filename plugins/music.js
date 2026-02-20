@@ -10,7 +10,7 @@ let videoUrl = q;
         videoUrl = searchResults.videos[0].url;
     }
     
-    const apiUrl = `https://apis.davidcyriltech.my.id/youtube/mp4?url=${videoUrl}`;
+    const apiUrl = `https://api.vreden.my.id/api/v1/download/play/audio?url=${videoUrl}`;
     const response = await axios.get(apiUrl);
     if (!response.data || !response.data.status || !response.data.result.url) {
         return reply("Failed to fetch the video. Try again later.");
