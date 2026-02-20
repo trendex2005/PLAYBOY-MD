@@ -4,7 +4,7 @@ cmd({ pattern: "ong", alias: ["musiic", "mp04"], desc: "Search and download a so
 
 let videoUrl = q;
     if (!q.includes("youtube.com") && !q.includes("youtu.be")) {
-        reply("*🎐 𝐀ɭīī 𝐌Ɗ 𝐒𝐄𝐀𝐑𝐂𝐇𝐈𝐍𝐆 𝐒𝐎𝐍𝐆...*");
+        reply("*🎐 TREND-X 𝐒𝐄𝐀𝐑𝐂𝐇𝐈𝐍𝐆 𝐒𝐎𝐍𝐆...*");
         const searchResults = await yts(q);
         if (!searchResults.videos.length) return reply("No results found for your query.");
         videoUrl = searchResults.videos[0].url;
@@ -28,11 +28,11 @@ let videoUrl = q;
 
 });
 
-cmd({ pattern: "music", alias: ["play2", "song2"], desc: "Search and download audio from YouTube", category: "media", react: "🎧", filename: __filename }, async (conn, mek, m, { from, args, q, reply }) => { try { if (!q) return reply("*𝐏ℓєα𝐬֟፝є 𝐏ʀ๏νιɖє 𝐀 𝐒๏ƞ͛g 𝐍αмє..*");
+cmd({ pattern: "music", alias: ["play", "song"], desc: "Search and download audio from YouTube", category: "media", react: "🎧", filename: __filename }, async (conn, mek, m, { from, args, q, reply }) => { try { if (!q) return reply("*𝐏ℓєα𝐬֟፝є 𝐏ʀ๏νιɖє 𝐀 𝐒๏ƞ͛g 𝐍αмє..*");
 
 let videoUrl = q;
     if (!q.includes("youtube.com") && !q.includes("youtu.be")) {
-        reply("*🎐 𝐀ɭīī 𝐌Ɗ 𝐒𝐄𝐀𝐑𝐂𝐇𝐈𝐍𝐆 𝐒𝐎𝐍𝐆...*");
+        reply("*🎐 TREND-X 𝐒𝐄𝐀𝐑𝐂𝐇𝐈𝐍𝐆 𝐒𝐎𝐍𝐆...*");
         const searchResults = await yts(q);
         if (!searchResults.videos.length) return reply("No results found for your query.");
         videoUrl = searchResults.videos[0].url;
