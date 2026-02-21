@@ -10,7 +10,7 @@ let videoUrl = q;
         videoUrl = searchResults.videos[0].url;
     }
     
-    const apiUrl = `https://api.vreden.my.id/api/v1/download/play/audio?query=${videoUrl}`;
+    const apiUrl = `https://api.vreden.my.id/api/v1/download/play/audio?query=${encodeURIComponent(link)}`);
     const response = await axios.get(apiUrl);
     if (!response.data || !response.data.status || !response.data.result.url) {
         return reply("Failed to fetch the video. Try again later.");
