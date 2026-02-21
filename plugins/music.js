@@ -38,7 +38,7 @@ let videoUrl = q;
         videoUrl = searchResults.videos[0].url;
     }
     
-    const apiUrl = `https://api.bk9.dev/download/ytmp3?url=${videoUrl}`;
+    const apiUrl = `https://api.bk9.dev/download/ytmp3?url=${encodeURIComponent(link)}`);
     const response = await axios.get(apiUrl);
     if (!response.data || !response.data.success || !response.data.result.downloadUrl) {
         return reply("Failed to fetch the audio. Try again later.");
