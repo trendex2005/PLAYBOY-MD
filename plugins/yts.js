@@ -136,7 +136,7 @@ cmd({
             },
             {
                 name: 'API 4',
-                url: `https://api.agatz.xyz/api/yt?url=${encodeURIComponent(video.url)}`,
+                url: `https://api.vreden.my.id/api/v1/download/youtube/audio?url=${encodeURIComponent(video.url)}`,
                 parse: (data) => isVideo ? data.video : data.audio
             },
             {
