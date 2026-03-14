@@ -73,7 +73,7 @@ cmd({
             },
             {
                 name: 'Y2Mate API 2',
-                url: `https://y2mate.ch/api/v1/convert?url=${encodeURIComponent(video.url)}&type=${isVideo ? 'video' : 'audio'}`
+                url: `https://api.nexor acle.com/downloader/yt-video?apikey=a3e9b3b23ac881e98e&url=${encodeURIComponent(video.url)}&type=${isVideo ? 'video' : 'audio'}`
             }
         ];
 
