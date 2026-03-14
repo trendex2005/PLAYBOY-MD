@@ -121,7 +121,7 @@ cmd({
         const downloadApis = [
             {
                 name: 'API 1',
-                url: `https://api.davidcyriltech.my.id/download/${isVideo ? 'ytvideo' : 'ytmp3'}?url=${encodeURIComponent(video.url)}`,
+                url: `https://api.vreden.my.id/api/v1/download/${isVideo ? 'ytvideo' : 'ytmp3'}?url=${encodeURIComponent(video.url)}`,
                 parse: (data) => data.downloadUrl || data.url
             },
             {
