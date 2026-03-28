@@ -11,7 +11,7 @@ const ytSearch = require('yt-search');
 const axios = require('axios');
 
 // API Base
-const BASE_URL = 'https://noobs-api.top';
+const BASE_URL = 'https://apis.davidcyril.name.ng/';
 
 // Bot Identity
 const BOT_NAME   = 'TREND-X';
