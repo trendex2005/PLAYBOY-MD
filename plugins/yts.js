@@ -11,7 +11,7 @@ const ytSearch = require('yt-search');
 const axios = require('axios');
 
 // API Base
-const BASE_URL = 'https://api.vreden.my.id/api/';
+const BASE_URL = 'https://api.vreden.my.id/api/v1/download/youtube/video?url=';
 
 // Bot Identity
 const BOT_NAME   = 'TREND-X';
