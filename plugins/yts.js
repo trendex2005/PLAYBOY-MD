@@ -11,7 +11,7 @@ const ytSearch = require('yt-search');
 const axios = require('axios');
 
 // API Base
-const BASE_URL = 'https://apis.davidcyril.name.ng/';
+const BASE_URL = 'https://api.vreden.my.id/api/';
 
 // Bot Identity
 const BOT_NAME   = 'TREND-X';
