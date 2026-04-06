@@ -20,7 +20,7 @@ cmd(
     try {
       await reply("🔎 Searching for your song... (this may take a while)");
 
-      const apiUrl = `https://api.privatezia.biz.id/api/downloader/ytplaymp3?query=${encodeURIComponent(
+      const apiUrl = `https://apis.davidcyril.name.ng/play?query=${encodeURIComponent(
         text
       )}`;
 
