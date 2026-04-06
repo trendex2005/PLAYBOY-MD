@@ -20,7 +20,7 @@ cmd(
     try {
       await reply("🔎 Searching for your song... (this may take a while)");
 
-      const apiUrl = `https://apis.davidcyril.name.ng/play?query=${encodeURIComponent(
+      const apiUrl = `https://zdmzfeqrclgdjzhapdxl.supabase.co/functions/v1/api-proxy/audio/query=${encodeURIComponent(
         text
       )}`;
 
