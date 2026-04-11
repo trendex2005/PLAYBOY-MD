@@ -21,50 +21,62 @@ cmd(
     try {
       await reply("🔎 Searching for your song... please wait");
 
-      // ✅ Step 1: Search YouTube
+      // ✅ Step 1: Search YouTube using YouTube oEmbed + scrape-free API
       let videoUrl = null;
       let searchTitle = text;
       let searchThumbnail = null;
 
       try {
-        const searchUrl = `https://api.vreden.my.id/api/v1/search/youtube?q=${encodeURIComponent(text)}`;
-        console.log("Searching:", searchUrl);
-        const searchRes = await axios.get(searchUrl, { timeout: 30000 });
-        console.log("Search result:", JSON.stringify(searchRes.data, null, 2));
+        const searchRes = await axios.get(
+          `https://www.youtube.com/results?search_query=${encodeURIComponent(text)}`,
+          {
+            timeout: 15000,
+            headers: {
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            },
+          }
+        );
 
-        const searchResult = searchRes.data?.result?.[0];
-        videoUrl = searchResult?.url;
-        searchTitle = searchResult?.title || text;
-        searchThumbnail = searchResult?.thumbnail || null;
+        const html = searchRes.data;
+        const match = html.match(/\/watch\?v=([a-zA-Z0-9_-]{11})/);
+        if (!match) return reply("❌ Couldn't find that song on YouTube.");
 
-        if (!videoUrl) {
-          return reply(`❌ Search failed. API response:\n${JSON.stringify(searchRes.data)}`);
-        }
+        const videoId = match[1];
+        videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+        searchThumbnail = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+
+        // Try to get title
+        const titleMatch = html.match(/"title":"([^"]+)"/);
+        if (titleMatch) searchTitle = titleMatch[1];
+
+        console.log("Found video:", videoUrl, searchTitle);
       } catch (searchErr) {
         console.error("Search error:", searchErr.message);
-        return reply(`❌ Search step failed: ${searchErr.message}`);
+        return reply(`❌ Search failed: ${searchErr.message}`);
       }
 
       await reply(`✅ Found: ${searchTitle}\n⬇️ Now downloading...`);
 
-      // ✅ Step 2: Download audio
+      // ✅ Step 2: Download using Vreden API with real YouTube URL
       try {
-        const downloadUrl = `https://api.vreden.my.id/api/v1/download/youtube/audio?url=${encodeURIComponent(videoUrl)}`;
-        console.log("Downloading:", downloadUrl);
-        const res = await axios.get(downloadUrl, { timeout: 60000 });
-        console.log("Download result:", JSON.stringify(res.data, null, 2));
+        const downloadApiUrl = `https://api.vreden.my.id/api/v1/download/youtube/audio?url=${encodeURIComponent(videoUrl)}`;
+        console.log("Downloading from:", downloadApiUrl);
+
+        const res = await axios.get(downloadApiUrl, { timeout: 60000 });
+        console.log("Download response:", JSON.stringify(res.data, null, 2));
 
         const data = res.data;
 
         if (!data || data.status === false || !data.result) {
-          return reply(`❌ Download API failed. Response:\n${JSON.stringify(data)}`);
+          return reply(`❌ Download failed. Response:\n${JSON.stringify(data)}`);
         }
 
         const result = data.result;
         const audioUrl = result.downloadUrl;
 
         if (!audioUrl) {
-          return reply(`❌ No audio URL in response. Full result:\n${JSON.stringify(result)}`);
+          return reply(`❌ No audio URL returned. Result:\n${JSON.stringify(result)}`);
         }
 
         const formatDuration = (s) =>
@@ -75,8 +87,7 @@ cmd(
         const thumbnail =
           result.thumbnail ||
           searchThumbnail ||
-          (result.videoId ? `https://img.youtube.com/vi/${result.videoId}/hqdefault.jpg` : null) ||
-          "https://img.youtube.com/vi/default/hqdefault.jpg";
+          `https://img.youtube.com/vi/default/hqdefault.jpg`;
 
         // ✅ Send thumbnail + info
         await malvin.sendMessage(
