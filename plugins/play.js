@@ -88,14 +88,14 @@ async (client, message, m, { isOwner, from, sender, args, prefix }) => {
         // Send the combined message with image and newsletter info
         await client.sendMessage(from, {
             image: { url: "https://files.catbox.moe/adymbp.jpg" },
-            caption: `${statusText}\n\n${additionalInfo}\n\n_CASEYRHODES-TECH_`,
+            caption: `${statusText}\n\n${additionalInfo}\n\n_TRENDEX_`,
             contextInfo: {
                 mentionedJid: [sender],
                 forwardingScore: 999,
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363401765045963@newsletter',
-                    newsletterName: 'TREND 𝐓𝐄𝐂𝐇 🌟',
+                    newsletterJid: '120363408776497275@newsletter',
+                    newsletterName: 'TRENDEX🌟',
                     serverMessageId: 143
                 }
             }
