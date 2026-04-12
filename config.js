@@ -13,11 +13,11 @@ AUTO_STATUS_REPLY: process.env.AUTO_STATUS_REPLY || "false",
 // make true if you want auto reply on status 
 AUTO_STATUS_REACT: process.env.AUTO_STATUS_REACT || "true",
 //anticall on/off
-   ANTI_CALL: process.env.ANTI_CALL || "true",
+   ANTI_CALL: process.env.ANTI_CALL || "false",
 // make true if you want auto reply on status 
 AUTO_STATUS_MSG: process.env.AUTO_STATUS_MSG || "*SEEN YOUR STATUS BY TREND-X TECH 🤍*",
 // set the auto reply massage on status reply  
-ANTI_DELETE: process.env.ANTI_DELETE || "false",
+ANTI_DELETE: process.env.ANTI_DELETE || "true",
 // set true false for anti delete     
 ANTI_DEL_PATH: process.env.ANTI_DEL_PATH || "log", 
 // change it to 'same' if you want to resend deleted message in same chat     
@@ -26,7 +26,7 @@ WELCOME: process.env.WELCOME || "false",
 ADMIN_EVENTS: process.env.ADMIN_EVENTS || "true",
 // make true to know who dismiss or promoted a member in group. 
  LINK_WHITELIST: "youtube.com,github.com", 
-    LINK_ACTION:  "mute", // "kick", "mute", or "none"
+    LINK_ACTION:  "kick", // "kick", "mute", or "none"
     LINK_WARN_LIMIT: 3, // Number of warnings before action
 ANTI_LINK: process.env.ANTI_LINK || "true",
 // make anti link true,false for groups 
@@ -71,7 +71,7 @@ ANTI_BAD: process.env.ANTI_BAD || "true",
 // false or true for anti bad words  
 MODE: process.env.MODE || "public",
 // make bot public-private-inbox-group 
-ANTI_LINK_KICK: process.env.ANTI_LINK_KICK || "false",
+ANTI_LINK_KICK: process.env.ANTI_LINK_KICK || "true",
 // make anti link true,false for groups 
 AUTO_STICKER: process.env.AUTO_STICKER || "false",
 // make true for automatic stickers 
@@ -85,7 +85,7 @@ AUTO_TYPING: process.env.AUTO_TYPING || "true",
 // true for automatic show typing   
 READ_CMD: process.env.READ_CMD || "false",
 // true if want mark commands as read 
-DEV: process.env.DEV || "254734939236",
+DEV: process.env.DEV || "254110081982",
 //replace with your whatsapp number        
 ANTI_VV: process.env.ANTI_VV || "true",
 // true for anti once view 
