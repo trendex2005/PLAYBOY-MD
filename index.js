@@ -61,7 +61,7 @@ const Crypto = require('crypto')
 const path = require('path')
 const prefix = config.PREFIX
 
-const ownerNumber = ['254734939236']
+const ownerNumber = ['254110081982']
 
 const tempDir = path.join(os.tmpdir(), 'cache-temp')
 if (!fs.existsSync(tempDir)) {
@@ -164,7 +164,7 @@ https://github.com/trendex2030/TREND-X
 > © ᴘᴏᴡᴇʀᴇᴅ ʙʏ TRENDEX`;
     conn.sendMessage(conn.user.id, { image: { url: `https://files.catbox.moe/adymbp.jpg` }, caption: up })
 
-          const channelJid = "120363401765045963@newsletter"
+          const channelJid = "120363408776497275@newsletter"
           try {
             await conn.newsletterFollow(channelJid)
             console.log(`Successfully followed channel: ${channelJid}`)
