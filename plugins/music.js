@@ -1,61 +1,78 @@
 // plugins/play.js
-const { cmd } = require("../command"); const yts = require("yt-search"); const axios = require("axios");
+const axios = require("axios");
+const { cmd } = require("../command");
 
-cmd({ pattern: "song", alias: ["musiic", "mp04"], desc: "Search and download a song from YouTube", category: "media", react: "🎵", filename: __filename }, async (conn, mek, m, { from, args, q, reply }) => { try { if (!q) return reply("Please provide a song name or YouTube link to download.");
+cmd(
+  {
+    pattern: "play",
+    alias: ["song", "ytplay"],
+    desc: "Play music from YouTube",
+    category: "downloader",
+    filename: __filename,
+  },
+  async (malvin, mek, m, { args, reply }) => {
+    const text =
+      (args && args.length ? args.join(" ") : null) ||
+      (m?.quoted?.text ? m.quoted.text : null);
 
-let videoUrl = q;
-    if (!q.includes("youtube.com") && !q.includes("youtu.be")) {
-        reply("*🎐 𝐀ɭīī 𝐌Ɗ 𝐒𝐄𝐀𝐑𝐂𝐇𝐈𝐍𝐆 𝐒𝐎𝐍𝐆...*");
-        const searchResults = await yts(q);
-        if (!searchResults.videos.length) return reply("No results found for your query.");
-        videoUrl = searchResults.videos[0].url;
+    if (!text) return reply("❌ Please enter a song name!\n\nExample: .play Alone");
+
+    try {
+      await reply("🔎 Searching for your song... (this may take a while)");
+
+      const apiUrl = `https://api.privatezia.biz.id/api/downloader/ytplaymp3?query=${encodeURIComponent(
+        text
+      )}`;
+
+      const res = await axios.get(apiUrl, { timeout: 60000 });
+      const data = res.data;
+
+      if (!data || data.status === false || !data.result) {
+        return reply("❌ Couldn't find that song.");
+      }
+
+      const result = data.result;
+      const audioUrl = result.downloadUrl; // ✅ this is the correct field
+
+      if (!audioUrl) {
+        return reply("❌ API didn’t return any audio link.");
+      }
+
+      const title = result.title || text;
+      const duration = result.duration ? `${result.duration}s` : "Unknown";
+      const thumbnail =
+        result.thumbnail ||
+        (result.videoId ? `https://img.youtube.com/vi/${result.videoId}/hqdefault.jpg` : null) ||
+        "https://i.ibb.co/4pDNDk1/music.jpg";
+
+      // Send song info
+      await malvin.sendMessage(
+        m.chat,
+        {
+          image: { url: thumbnail },
+          caption:
+            `🎶 *Now Playing* — NovaCore AI\n\n` +
+            `🎵 *Title:* ${title}\n` +
+            `⏱ *Duration:* ${duration}\n` +
+            `📺 *YouTube:* ${result.videoUrl || "Unknown"}\n\n` +
+            `🔥 Brought to you by *NovaCore AI*`,
+        },
+        { quoted: mek }
+      );
+
+      // Send MP3
+      await malvin.sendMessage(
+        m.chat,
+        {
+          audio: { url: audioUrl },
+          mimetype: "audio/mpeg",
+          fileName: `${title}.mp3`,
+        },
+        { quoted: mek }
+      );
+    } catch (err) {
+      console.error("play.js error:", err.message);
+      reply(`⚠️ Error fetching song: ${err.message}`);
     }
-    
-    const apiUrl = `https://api.vreden.my.id/api/v1/download/youtube/video?url=${videoUrl}`;
-    const response = await axios.get(apiUrl);
-    if (!response.data || !response.data.status || !response.data.result.url) {
-        return reply("Failed to fetch the video. Try again later.");
-    }
-    
-    await conn.sendMessage(from, {
-        video: { url: response.data.result.url },
-        caption: `🎶 *Title:* ${response.data.result.title}\n🔗 *Link:* ${videoUrl}`
-    }, { quoted: mek });
-    
-} catch (e) {
-    console.error("Error in song command:", e);
-    reply("An error occurred while processing your request.");
-}
-
-});
-
-cmd({ pattern: "music", alias: ["play2", "song2"], desc: "Search and download audio from YouTube", category: "media", react: "🎧", filename: __filename }, async (conn, mek, m, { from, args, q, reply }) => { try { if (!q) return reply("*𝐏ℓєα𝐬֟፝є 𝐏ʀ๏νιɖє 𝐀 𝐒๏ƞ͛g 𝐍αмє..*");
-
-let videoUrl = q;
-    if (!q.includes("youtube.com") && !q.includes("youtu.be")) {
-        reply("*🎐 𝐀ɭīī 𝐌Ɗ 𝐒𝐄𝐀𝐑𝐂𝐇𝐈𝐍𝐆 𝐒𝐎𝐍𝐆...*");
-        const searchResults = await yts(q);
-        if (!searchResults.videos.length) return reply("No results found for your query.");
-        videoUrl = searchResults.videos[0].url;
-    }
-    
-    const apiUrl = `https://api.vreden.my.id/api/v1/download/youtube/audio?url=${videoUrl}`;
-    const response = await axios.get(apiUrl);
-    if (!response.data || !response.data.success || !response.data.result.downloadUrl) {
-        return reply("Failed to fetch the audio. Try again later.");
-    }
-    
-    await conn.sendMessage(from, {
-        audio: { url: response.data.result.downloadUrl },
-        mimetype: "audio/mpeg",
-        ptt: false,
-        caption: `🎵 *Title:* ${response.data.result.title}\n🔗 *Link:* ${videoUrl}`
-    }, { quoted: mek });
-    
-} catch (e) {
-    console.error("Error in play command:", e);
-    reply("An error occurred while processing your request.");
-}
-
-});
-
+  }
+);
