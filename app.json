@@ -35,7 +35,7 @@
      "ANTI_DELETE": {
       "description": "set true for show deleted messages.",
       "required": false,
-      "value": "false"  
+      "value": "true"  
     },
     
     "ALWAYS_ONLINE": {
@@ -107,7 +107,7 @@
      "ANTI_LINK_KICK": {
       "description": "Make it true if you want bot auto remove group link.",
       "required": true,
-      "value": "false"
+      "value": "true"
       
     },
     
@@ -150,7 +150,7 @@
     "AUTO_TYPING": {
       "description": "Make it true if you want auto typing.",
       "required": false,
-      "value": "false"
+      "value": "true"
     },
 
     "AUTO_REACT": {
@@ -192,7 +192,7 @@
     "ANTICALL": {
       "description": "Make it true if you want bot to block incoming calls.",
       "required": true,
-      "value": "true"
+      "value": "false"
     },
     "READ_MESSAGE": {
       "description": "Make it true if you want bot read your all sms just now.",
