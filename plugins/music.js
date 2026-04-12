@@ -1,10 +1,10 @@
-* ============================================
-   HUNTER XMD PRO - AUDIO / VIDEO DOWNLOADER
-   COMMAND: .play [song name] | .video [name]
-   API: Noobs API (https://noobs-api.top)
-   STYLE: Clean Modern Card Design
-   FIX: Base64 buffer support included
-   ============================================ */
+//* ============================================
+//   HUNTER XMD PRO - AUDIO / VIDEO DOWNLOADER
+  // COMMAND: .play [song name] | .video [name]
+ //  API: Noobs API (https://noobs-api.top)
+//   STYLE: Clean Modern Card Design
+ //  FIX: Base64 buffer support included
+ //  ============================================ */
 
 const { cmd } = require('../command');
 const ytSearch = require('yt-search');
