@@ -204,7 +204,7 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
 //--------------------------------------------
 cmd({
     pattern: "auto-seen",
-    alias: ["autostatusview"],
+    alias: ["autoviewstatus"],
     desc: "Enable or disable auto-viewing of statuses",
     category: "settings",
     filename: __filename
