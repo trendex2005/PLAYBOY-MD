@@ -489,7 +489,7 @@ cmd({
 
 
 cmd({
-  pattern: "deletelink",
+  pattern: "antilink",
   alias: ["linksdelete"],
   desc: "Enable or disable DELETE_LINKS in groups",
   category: "group",
