@@ -85,10 +85,10 @@ cmd({
         config.MODE = "public";
         return reply("*_BOT MODE IS NOW SET TO PUBLIC ✅_*.")
         const {exec} = require("child_process")
-reply("*_DATABASE UPDATE CASEYRHODES-XMD RESTARTING NOW...🚀_*")
+reply("*_DATABASE UPDATE TREND-X RESTARTING NOW...🚀_*")
 await sleep(1500)
 exec("pm2 restart all")
-reply("*_CASEYRHODES XMD STARTED NOW...🚀_*");
+reply("*_TREND X STARTED NOW...🚀_*");
     } else {
         return reply("❌ Invalid mode. Please use `.mode private` or `.mode public`.");
     }
@@ -175,7 +175,7 @@ async (conn, mek, m, { from, args, isOwner, reply }) => {
 // AUTO_VIEW_STATUS COMMANDS
 //--------------------------------------------
 cmd({
-    pattern: "statusview",
+    pattern: "autoviewstatus",
     alias: ["auto_status_seen"],
     desc: "Enable or disable auto-viewing of statuses",
     category: "settings",
@@ -450,4 +450,4 @@ async (conn, mek, m, { from, args, isOwner, reply }) => {
     }
 });
 
-// databases created by @silentlover432 🚀📄♥️
+// databases created by trendex
