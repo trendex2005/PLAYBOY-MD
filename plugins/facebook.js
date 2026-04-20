@@ -1,189 +1,100 @@
-/* ============================================
-   HUNTER XMD PRO - FACEBOOK VIDEO DOWNLOADER
-   COMMAND  : .fb <facebook_url>
-   ALIAS    : .facebook .fbdl
-
-   CONFIRMED reachable from your Heroku dyno:
-   ✅ apiskeith.top  (in YOUR logs: /download/audio works)
-   ✅ www.tikwm.com  (used by tiktok plugins)
-   ✅ api.cobalt.tools (gets 400 = alive)
-   ============================================ */
+/**
+ * Facebook Downloader - Download Facebook videos
+ */
 
 const axios = require('axios');
-const { cmd } = require('../command');
+const config = require('../config');
 
-const BOT_NAME = 'TREND-X';
+// Store processed message IDs to prevent duplicates
+const processedMessages = new Set();
 
-function resolveMediaSource(link) {
-    if (!link) return null;
-    if (link.startsWith('http://') || link.startsWith('https://')) return { url: link };
-    try {
-        const b = link.includes(',') ? link.split(',')[1] : link;
-        return Buffer.from(b, 'base64');
-    } catch (e) { return null; }
-}
+module.exports = {
+    name: 'facebook',
+    aliases: ['fb', 'fbdl', 'facebookdl'],
+    category: 'media',
+    description: 'Download Facebook videos',
+    usage: '.facebook <Facebook URL>',
 
-// ─── apiskeith.top — try every possible FB endpoint ──────────
-// Your bot uses: /download/audio  →  so try /download/video and /download/facebook
-async function tryApisKeith(url, endpoint) {
-    const res = await axios.get(
-        `https://apiskeith.top${endpoint}?url=${encodeURIComponent(url)}`,
-        { timeout: 25000, headers: { 'User-Agent': 'Mozilla/5.0' } }
-    );
-    const d = res.data;
-    console.log(`[FB-DL] ApisKeith ${endpoint}:`, JSON.stringify(d).substring(0, 400));
-    const v = d?.url || d?.hd || d?.sd || d?.video || d?.videoUrl
-            || d?.data?.url || d?.data?.hd || d?.data?.sd
-            || d?.result?.url || d?.result?.hd
-            || (Array.isArray(d?.links) ? d.links[0]?.url : null)
-            || (Array.isArray(d?.medias) ? (d.medias.find(x => (x.quality||'').includes('HD')) || d.medias[0])?.url : null);
-    if (v) return v;
-    throw new Error(`apiskeith ${endpoint}: no video URL`);
-}
+    async execute(sock, msg, args, extra) {
+        const chatId = extra.from;
 
-// ─── cobalt — correct v10 body ────────────────────────────────
-async function tryCobalt(url) {
-    const instances = [
-        'https://api.cobalt.tools',
-        'https://cobalt.imput.net',
-        'https://co.wuk.sh',
-    ];
-    for (const base of instances) {
         try {
-            const res = await axios.post(`${base}/`, { url }, {
-                timeout: 20000,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'User-Agent': 'Mozilla/5.0'
-                }
+            // Prevent duplicate processing
+            if (processedMessages.has(msg.key.id)) return;
+            processedMessages.add(msg.key.id);
+            setTimeout(() => processedMessages.delete(msg.key.id), 5 * 60 * 1000);
+
+            const text = msg.message?.conversation ||
+                         msg.message?.extendedTextMessage?.text ||
+                         args.join(' ');
+
+            if (!text) {
+                return await sock.sendMessage(chatId, {
+                    text: 'Please provide a Facebook link for the video.'
+                }, { quoted: msg });
+            }
+
+            const url = text.split(' ').slice(1).join(' ').trim();
+
+            if (!url) {
+                return await sock.sendMessage(chatId, {
+                    text: 'Please provide a Facebook link for the video.'
+                }, { quoted: msg });
+            }
+
+            const fbPatterns = [
+                /https?:\/\/(?:www\.)?facebook\.com\//,
+                /https?:\/\/fb\.watch\//,
+                /https?:\/\/m\.facebook\.com\//,
+                /https?:\/\/web\.facebook\.com\//,
+                /https?:\/\/(?:www\.)?facebook\.com\/share\//
+            ];
+
+            const isValidUrl = fbPatterns.some(pattern => pattern.test(url));
+            if (!isValidUrl) {
+                return await sock.sendMessage(chatId, {
+                    text: 'That is not a valid Facebook link. Please provide a valid Facebook video link.'
+                }, { quoted: msg });
+            }
+
+            await sock.sendMessage(chatId, {
+                react: { text: '↘️', key: msg.key }
             });
-            const d = res.data;
-            console.log(`[FB-DL] Cobalt(${base}):`, JSON.stringify(d).substring(0, 300));
-            if (d?.url) return d.url;
-            if (d?.status === 'picker' && d?.picker?.length) {
-                const v = d.picker.find(x => x.type === 'video') || d.picker[0];
-                if (v?.url) return v.url;
-            }
-        } catch (e) {
-            console.error(`[FB-DL] Cobalt(${base}) err:`, e.message);
-        }
-    }
-    throw new Error('All cobalt instances failed');
-}
 
-// ─── tikwm facebook endpoint ──────────────────────────────────
-async function tryTikwmFb(url) {
-    const res = await axios.post('https://www.tikwm.com/api/facebook',
-        new URLSearchParams({ url, hd: '1' }),
-        {
-            timeout: 25000,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'User-Agent': 'Mozilla/5.0 (iPad; U; CPU OS 3_2 like Mac OS X)',
-                'Referer': 'https://www.tikwm.com/'
-            }
-        }
-    );
-    const d = res.data;
-    console.log('[FB-DL] TikwmFB:', JSON.stringify(d).substring(0, 300));
-    if (d?.code === 0 && d?.data) {
-        const v = d.data.hdplay || d.data.play || d.data.url || d.data.video;
-        if (v) return v;
-    }
-    throw new Error(`tikwm-fb: code=${d?.code} msg=${d?.msg}`);
-}
-
-// ─── COMMAND ──────────────────────────────────────────────────
-cmd({
-    pattern: "fb",
-    alias: ["facebook", "fbdl"],
-    desc: "Download Facebook videos",
-    category: "downloader",
-    react: "📥",
-    filename: __filename,
-    use: "<Facebook URL>"
-},
-async (conn, mek, m, { from, args, q, reply }) => {
-    try {
-        if (!q || !q.startsWith('http')) {
-            return reply(`📥 *Facebook Video Downloader*\n━━━━━━━━━━━━━━━━━━━━\n*Usage:* .fb _<Facebook URL>_\n\n*Examples:*\n  .fb https://fb.watch/xxxxx\n  .fb https://www.facebook.com/reel/xxxxx\n  .fb https://www.facebook.com/watch?v=xxxxx\n━━━━━━━━━━━━━━━━━━━━\n> ${BOT_NAME}`);
-        }
-
-        if (!q.includes('facebook.com') && !q.includes('fb.watch') && !q.includes('fb.com')) {
-            return reply(`❌ *Invalid Link*\nPlease send a valid Facebook URL.\n> ${BOT_NAME}`);
-        }
-
-        const fbUrl = q.trim();
-        await conn.sendMessage(from, { react: { text: '⏳', key: mek.key } });
-        await reply(`⏳ *Downloading...*\n━━━━━━━━━━━━━━━━━━━━\n🔗 _${fbUrl.substring(0, 55)}..._\n━━━━━━━━━━━━━━━━━━━━\n> ${BOT_NAME}`);
-
-        let rawVideoUrl = null;
-
-        // Try apiskeith endpoints first (confirmed reachable domain)
-        const keithEndpoints = [
-            '/download/facebook',
-            '/download/video',
-            '/api/fbdl',
-            '/api/facebook',
-            '/fbdl',
-        ];
-
-        for (const ep of keithEndpoints) {
             try {
-                console.log(`[FB-DL] ApisKeith trying: ${ep}`);
-                rawVideoUrl = await tryApisKeith(fbUrl, ep);
-                if (rawVideoUrl) {
-                    console.log(`[FB-DL] ✅ SUCCESS apiskeith${ep}:`, rawVideoUrl.substring(0, 80));
-                    break;
+                const apiResponse = await axios.get(
+                    `https://apiskeith.top/download/fbdown?url=${encodeURIComponent(url)}`
+                );
+                const data = apiResponse.data;
+
+                if (data && data.status && data.result && (data.result.media.hd || data.result.media.sd)) {
+                    const videoUrl = data.result.media.hd || data.result.media.sd;
+                    const caption = config.botName;
+
+                    await sock.sendMessage(chatId, {
+                        video: { url: videoUrl },
+                        mimetype: 'video/mp4',
+                        caption: caption
+                    }, { quoted: msg });
+
+                } else {
+                    return await sock.sendMessage(chatId, {
+                        text: 'Failed to fetch video. Please check the link or try again later.'
+                    }, { quoted: msg });
                 }
-            } catch (e) {
-                console.error(`[FB-DL] ❌ apiskeith${ep}:`, e.message);
+
+            } catch (error) {
+                console.error('Error in Facebook API:', error.message || error);
+                await sock.sendMessage(chatId, {
+                    text: 'Failed to download the Facebook video. Please try again later.'
+                }, { quoted: msg });
             }
+
+        } catch (error) {
+            console.error('Error in Facebook command:', error.message || error);
+            await sock.sendMessage(chatId, {
+                text: 'An unexpected error occurred. Please try again.'
+            }, { quoted: msg });
         }
-
-        // Then try cobalt
-        if (!rawVideoUrl) {
-            try {
-                rawVideoUrl = await tryCobalt(fbUrl);
-                if (rawVideoUrl) console.log('[FB-DL] ✅ SUCCESS Cobalt:', rawVideoUrl.substring(0, 80));
-            } catch (e) {
-                console.error('[FB-DL] ❌ Cobalt:', e.message);
-            }
-        }
-
-        // Then try tikwm
-        if (!rawVideoUrl) {
-            try {
-                rawVideoUrl = await tryTikwmFb(fbUrl);
-                if (rawVideoUrl) console.log('[FB-DL] ✅ SUCCESS TikwmFB:', rawVideoUrl.substring(0, 80));
-            } catch (e) {
-                console.error('[FB-DL] ❌ TikwmFB:', e.message);
-            }
-        }
-
-        if (!rawVideoUrl) {
-            await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
-            return reply(`❌ *Download Failed*\n━━━━━━━━━━━━━━━━━━━━\nCould not download this video.\n\n› Video may be private or expired\n› Try a public Facebook video link\n━━━━━━━━━━━━━━━━━━━━\n> ${BOT_NAME}`);
-        }
-
-        const videoSource = resolveMediaSource(rawVideoUrl);
-        if (!videoSource) {
-            await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
-            return reply(`❌ *Media Error*\n> ${BOT_NAME}`);
-        }
-
-        await conn.sendMessage(from, {
-            video: videoSource,
-            mimetype: 'video/mp4',
-            caption: `📥 *Facebook Video*\n━━━━━━━━━━━━━━━━━━━━\n✅ Downloaded successfully\n━━━━━━━━━━━━━━━━━━━━\n> ${BOT_NAME}`
-        }, { quoted: mek });
-
-        await conn.sendMessage(from, { react: { text: '✅', key: mek.key } });
-
-    } catch (e) {
-        console.error('[FB-DL] Fatal:', e.message);
-        await conn.sendMessage(from, { react: { text: '❌', key: mek.key } }).catch(() => {});
-        reply(`❌ *Error*\n${e.message.substring(0, 100)}\n> ${BOT_NAME}`);
     }
-});
+};
