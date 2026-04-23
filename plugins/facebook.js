@@ -1,5 +1,7 @@
-const axios = require("axios");
+const getFBInfo = require("@renpwn/fb-downloader");
 const { cmd } = require("../command");
+
+const FB_REGEX = /https?:\/\/(?:www\.|m\.|web\.)?(?:facebook\.com|fb\.watch|fb\.me)\/.+/i;
 
 const safeReact = async (conn, mek, emoji) => {
   try {
@@ -8,8 +10,6 @@ const safeReact = async (conn, mek, emoji) => {
     });
   } catch (_) {}
 };
-
-const FB_REGEX = /https?:\/\/(?:www\.|m\.|web\.)?(?:facebook\.com|fb\.watch|fb\.me)\/.+/i;
 
 cmd({
   pattern: "fb",
@@ -34,42 +34,42 @@ async (conn, mek, m, { from, q, reply }) => {
 
     await safeReact(conn, mek, "📥");
 
-    // API call
-    let data;
+    // Fetch video info using local package — no external API
+    let info;
     try {
-      const res = await axios.get("https://apiskeith.top/download/fbdown", {
-        params: { url },
-        timeout: 20000
-      });
-      data = res.data;
-    } catch (apiErr) {
+      info = await getFBInfo(url);
+    } catch (err) {
+      console.error("[fb] Scraper error:", err.message);
       await safeReact(conn, mek, "❌");
-      const reason = apiErr.code === 'ECONNABORTED'
-        ? "Request timed out. Try again."
-        : apiErr.response?.status === 429
-          ? "Too many requests. Please wait and try again."
-          : "API is unreachable. Try again later.";
-      return reply(`*❌ ${reason}*`);
+      return reply("*❌ Could not fetch video. The post may be private or the link is invalid.*");
     }
 
-    // Validate response
-    if (!data?.status || !data?.data?.url) {
+    // Pick HD first, fall back to SD
+    const videoUrl = info?.hd || info?.sd;
+    const title = info?.title || "Facebook Video";
+
+    if (!videoUrl) {
       await safeReact(conn, mek, "❌");
-      return reply("*❌ Failed to fetch video. The link may be private or unsupported.*");
+      return reply("*❌ No downloadable video found. Try a different link.*");
     }
+
+    const caption =
+      `📥 *Facebook Video Downloaded*\n\n` +
+      `🎬 *${title}*\n\n` +
+      `- *Powered By TRENDEX AI ✅*`;
 
     // Send video
     try {
       await conn.sendMessage(from, {
-        video: { url: data.data.url },
-        mimetype: 'video/mp4',
-        caption: "📥 *Facebook Video Downloaded*\n\n- *Powered By TRENDEX AI ✅*",
+        video: { url: videoUrl },
+        mimetype: "video/mp4",
+        caption,
         contextInfo: { mentionedJid: [m.sender] }
       }, { quoted: mek });
     } catch (sendErr) {
-      console.error("[fb] Send failed:", sendErr.message);
+      console.error("[fb] Send error:", sendErr.message);
       await safeReact(conn, mek, "❌");
-      return reply("*❌ Video could not be sent. It may be too large.*");
+      return reply("*❌ Video could not be sent. It may be too large for WhatsApp.*");
     }
 
     await safeReact(conn, mek, "✅");
