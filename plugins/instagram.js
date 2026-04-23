@@ -121,12 +121,12 @@ module.exports = {
             await sock.sendMessage(chatId, {
               video: { url: mediaUrl },
               mimetype: 'video/mp4',
-              caption: `*DOWNLOADED BY ${config.botName.toUpperCase()}*`
+              caption: `*DOWNLOADED BY ${config.BOT_NAME.toUpperCase()}*`
             }, { quoted: msg });
           } else {
             await sock.sendMessage(chatId, {
               image: { url: mediaUrl },
-              caption: `*DOWNLOADED BY ${config.botName.toUpperCase()}*`
+              caption: `*DOWNLOADED BY ${config.BOT_NAME.toUpperCase()}*`
             }, { quoted: msg });
           }
           
