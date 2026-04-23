@@ -89,7 +89,7 @@ async (conn, mek, m, { from, args, q, reply, react }) => {
     }
 
     const captionText =
-      `*❒ ᴀʟɪ-ᴍᴅ ᴠɪᴅᴇᴏ ᴅᴏᴡɴʟᴏᴀᴅᴇᴅ ❒*`;
+      `*❒ TREND-X ᴠɪᴅᴇᴏ ᴅᴏᴡɴʟᴏᴀᴅᴇᴅ ❒*`;
 
     let sent = 0;
 
