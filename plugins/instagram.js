@@ -1,15 +1,8 @@
-const axios = require("axios");
-const { cmd } = require('../command');
+const { igdl } = require('ruhend-scraper');
+const { cmd, commands } = require('../command');
 
 // Prevent duplicate processing
 const processedMessages = new Set();
-
-// Valid Instagram URL patterns
-const IG_REGEX = /https?:\/\/(?:www\.)?(?:instagram\.com|instagr\.am)\/(p|reel|tv|stories)\/[\w-]+/;
-
-function isValidIgUrl(url) {
-  return typeof url === 'string' && IG_REGEX.test(url);
-}
 
 function deduplicateMedia(arr) {
   const seen = new Set();
@@ -23,10 +16,22 @@ function deduplicateMedia(arr) {
 function isVideo(media, postUrl = '') {
   return (
     media?.type === 'video' ||
-    /\.(mp4|mov|webm)$/i.test(media?.url || '') ||
+    /\.(mp4|mov|avi|mkv|webm)$/i.test(media?.url || '') ||
     /\/(reel|tv)\//.test(postUrl)
   );
 }
+
+const safeReact = async (conn, mek, react, emoji) => {
+  try {
+    if (typeof react === 'function') {
+      await react(emoji);
+    } else {
+      await conn.sendMessage(mek.key.remoteJid, {
+        react: { text: emoji, key: mek.key }
+      });
+    }
+  } catch (_) {}
+};
 
 cmd({
   pattern: "insta",
@@ -36,8 +41,9 @@ cmd({
   react: "⏳",
   filename: __filename
 },
-async (conn, mek, m, { from, q, reply, react }) => {
-  // --- Duplicate guard ---
+async (conn, mek, m, { from, args, q, reply, react }) => {
+
+  // Duplicate guard
   const msgId = mek?.key?.id;
   if (!msgId) return;
   if (processedMessages.has(msgId)) return;
@@ -45,114 +51,85 @@ async (conn, mek, m, { from, q, reply, react }) => {
   setTimeout(() => processedMessages.delete(msgId), 5 * 60 * 1000);
 
   try {
-    // --- Input validation ---
+    // Input validation
     if (!q || !q.trim()) {
-      return reply("🏷️ Please provide an Instagram post or reel link.\n\nExample:\n.insta https://www.instagram.com/reel/xxxxx");
+      return reply("*🏷️ ᴘʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴀɴ ɪɴsᴛᴀɢʀᴀᴍ ᴘᴏsᴛ ᴏʀ ʀᴇᴇʟ ʟɪɴᴋ.*");
     }
 
     const url = q.trim();
 
-    if (!isValidIgUrl(url)) {
-      return reply("❌ Invalid Instagram link.\n\nSupported formats:\n• instagram.com/p/...\n• instagram.com/reel/...\n• instagram.com/tv/...");
+    if (!url.includes("instagram.com") && !url.includes("instagr.am")) {
+      return reply("*❌ Invalid Instagram link.*");
     }
 
-    await react("📥");
+    await safeReact(conn, mek, react, "📥");
 
-    // --- API call with timeout ---
-    let data;
+    // Fetch media using ruhend-scraper
+    let downloadData;
     try {
-      const res = await axios.get("https://delirius-apiofc.vercel.app/download/igv2", {
-        params: { url: url },
-        timeout: 20000,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-      });
-      data = res.data;
-    } catch (apiErr) {
-      await react("❌");
-      const reason = apiErr.code === 'ECONNABORTED'
-        ? "Request timed out. Try again."
-        : apiErr.response?.status === 404
-          ? "Post not found. It may have been deleted."
-          : apiErr.response?.status === 429
-            ? "Too many requests. Please wait and try again."
-            : "API is unreachable. Try again later.";
-      return reply(`❌ ${reason}`);
+      downloadData = await igdl(url);
+    } catch (scraperErr) {
+      console.error("[insta] Scraper error:", scraperErr.message);
+      await safeReact(conn, mek, react, "❌");
+      return reply("*❌ Failed to fetch media. The post may be private or the link is invalid.*");
     }
 
-    // --- Validate API response ---
-    if (!data?.status || !data?.data) {
-      await react("❌");
-      return reply("❌ Could not fetch media. The post may be private or unavailable.");
+    // Validate scraper response
+    if (!downloadData?.data?.length) {
+      await safeReact(conn, mek, react, "❌");
+      return reply("*❌ No media found. The post may be private, deleted, or unsupported.*");
     }
 
-    const {
-      fullname = "Unknown",
-      likes = "N/A",
-      comments = "N/A",
-      followed = "N/A",
-      download = []
-    } = data.data;
-
-    // --- Validate media list ---
-    const mediaList = deduplicateMedia(download).slice(0, 20);
+    // Deduplicate and limit
+    const mediaList = deduplicateMedia(downloadData.data).slice(0, 20);
 
     if (!mediaList.length) {
-      await react("❌");
-      return reply("❌ No downloadable media found. The post might be private or unsupported.");
+      await safeReact(conn, mek, react, "❌");
+      return reply("*❌ No valid media could be extracted.*");
     }
 
-    // --- Build caption ---
-    const caption =
-      `*❒ Instagram Downloader ❒*\n\n` +
-      `👤 *User:* ${fullname}\n` +
-      `♥️ *Likes:* ${likes}\n` +
-      `💬 *Comments:* ${comments}\n` +
-      `👥 *Followers:* ${followed}`;
+    const captionText =
+      `*❒ ᴀʟɪ-ᴍᴅ ᴠɪᴅᴇᴏ ᴅᴏᴡɴʟᴏᴀᴅᴇᴅ ❒*`;
 
-    // --- Send each media item ---
-    let successCount = 0;
+    let sent = 0;
 
     for (let i = 0; i < mediaList.length; i++) {
       const media = mediaList[i];
-
       if (!media?.url) continue;
 
       try {
-        const mediaType = isVideo(media, url) ? 'video' : 'image';
+        const mediaIsVideo = isVideo(media, url);
 
         await conn.sendMessage(from, {
-          [mediaType]: { url: media.url },
-          ...(mediaType === 'video' && { mimetype: 'video/mp4' }),
-          caption: i === 0 ? caption : '', // Caption only on first item
+          [mediaIsVideo ? 'video' : 'image']: { url: media.url },
+          ...(mediaIsVideo && { mimetype: 'video/mp4' }),
+          caption: i === 0 ? captionText : '',
           contextInfo: { mentionedJid: [m.sender] }
         }, { quoted: mek });
 
-        successCount++;
+        sent++;
 
       } catch (sendErr) {
-        console.error(`[insta] Failed to send media ${i + 1}:`, sendErr.message);
-        // Keep going — don't crash the whole loop
+        console.error(`[insta] Media ${i + 1} failed:`, sendErr.message);
+        // Continue with next item
       }
 
-      // Delay between sends to avoid rate limiting
+      // Delay between sends
       if (i < mediaList.length - 1) {
-        await new Promise(r => setTimeout(r, 1200));
+        await new Promise(r => setTimeout(r, 1000));
       }
     }
 
-    // --- Final react ---
-    if (successCount === 0) {
-      await react("❌");
-      return reply("❌ All media failed to send. The files may be too large or unavailable.");
+    if (sent === 0) {
+      await safeReact(conn, mek, react, "❌");
+      return reply("*❌ All media failed to send. Files may be too large or expired.*");
     }
 
-    await react("✅");
+    await safeReact(conn, mek, react, "✅");
 
   } catch (e) {
     console.error("[insta] Unhandled error:", e);
-    try { await react("❌"); } catch (_) {}
-    reply(`❌ Unexpected error: ${e.message || "Unknown error"}`);
+    await safeReact(conn, mek, react, "❌");
+    reply(`*❌ An error occurred:* ${e.message || "Unknown error"}`);
   }
 });
