@@ -25,7 +25,7 @@ async (conn, mek, m, { from, args, q, reply, react }) => {
 
         const { username, fullname, caption, likes, comments, followed, download } = data.data;
 
-        const captionText = `*❒ ᴀʟɪ-ᴍᴅ ᴠɪᴅᴇᴏ ᴅᴏᴡɴʟᴏᴀᴅᴇᴅ ❒*\n\n` +
+        const captionText = `*❒ TREND-X ᴠɪᴅᴇᴏ ᴅᴏᴡɴʟᴏᴀᴅᴇᴅ ❒*\n\n` +
                             `👤 *ᴜsᴇʀ:* ${fullname}\n` +
                             `♥️ *ʟɪᴋᴇs:* ${likes}\n💬 *ᴄᴏᴍᴍᴇɴᴛs:* ${comments}\n👥 *ғᴏʟʟᴏᴡᴇʀs:* ${followed}\n`;
 
