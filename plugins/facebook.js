@@ -1,41 +1,82 @@
 const axios = require("axios");
 const { cmd } = require("../command");
 
+const safeReact = async (conn, mek, emoji) => {
+  try {
+    await conn.sendMessage(mek.key.remoteJid, {
+      react: { text: emoji, key: mek.key }
+    });
+  } catch (_) {}
+};
+
+const FB_REGEX = /https?:\/\/(?:www\.|m\.|web\.)?(?:facebook\.com|fb\.watch|fb\.me)\/.+/i;
+
 cmd({
   pattern: "fb",
   alias: ["facebook", "fbdl"],
   desc: "Download Facebook videos",
-  category: "download",
+  category: "downloader",
   filename: __filename,
   use: "<Facebook URL>",
-}, async (conn, m, store, { from, args, q, reply }) => {
+},
+async (conn, mek, m, { from, q, reply }) => {
   try {
-    // Check if a URL is provided
-    if (!q || !q.startsWith("http")) {
-      return reply("*`Need a valid Facebook URL`*\n\nExample: `.fb https://www.facebook.com/...`");
+    // Input validation
+    if (!q || !q.trim()) {
+      return reply("*🏷️ Please provide a Facebook video link.*\n\nExample:\n*.fb https://www.facebook.com/...*");
     }
 
-    // Add a loading react
-    await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+    const url = q.trim();
 
-    // Fetch video URL from the API
-    const apiUrl = `https://apiskeith.top/download/fbdown?url=${encodeURIComponent(q)}`;
-    const { data } = await axios.get(apiUrl);
-
-    // Check if the API response is valid
-    if (!data.status || !data.data || !data.data.url) {
-      return reply("❌ Failed to fetch the video. Please try another link.");
+    if (!FB_REGEX.test(url)) {
+      return reply("*❌ Invalid Facebook link.*\n\nSupported:\n• facebook.com/...\n• fb.watch/...\n• fb.me/...");
     }
 
-    // Send the video to the user
-    const videoUrl = data.data.url;
-    await conn.sendMessage(from, {
-      video: { url: videoUrl },
-      caption: "📥 *Facebook Video Downloaded*\n\n- *Powered By TRENDEX AI ✅*",
-    }, { quoted: m });
+    await safeReact(conn, mek, "📥");
 
-  } catch (error) {
-    console.error("Error:", error); // Log the error for debugging
-    reply("❌ Error fetching the video. Please try again.");
+    // API call
+    let data;
+    try {
+      const res = await axios.get("https://apiskeith.top/download/fbdown", {
+        params: { url },
+        timeout: 20000
+      });
+      data = res.data;
+    } catch (apiErr) {
+      await safeReact(conn, mek, "❌");
+      const reason = apiErr.code === 'ECONNABORTED'
+        ? "Request timed out. Try again."
+        : apiErr.response?.status === 429
+          ? "Too many requests. Please wait and try again."
+          : "API is unreachable. Try again later.";
+      return reply(`*❌ ${reason}*`);
+    }
+
+    // Validate response
+    if (!data?.status || !data?.data?.url) {
+      await safeReact(conn, mek, "❌");
+      return reply("*❌ Failed to fetch video. The link may be private or unsupported.*");
+    }
+
+    // Send video
+    try {
+      await conn.sendMessage(from, {
+        video: { url: data.data.url },
+        mimetype: 'video/mp4',
+        caption: "📥 *Facebook Video Downloaded*\n\n- *Powered By TRENDEX AI ✅*",
+        contextInfo: { mentionedJid: [m.sender] }
+      }, { quoted: mek });
+    } catch (sendErr) {
+      console.error("[fb] Send failed:", sendErr.message);
+      await safeReact(conn, mek, "❌");
+      return reply("*❌ Video could not be sent. It may be too large.*");
+    }
+
+    await safeReact(conn, mek, "✅");
+
+  } catch (e) {
+    console.error("[fb] Unhandled error:", e);
+    await safeReact(conn, mek, "❌");
+    reply(`*❌ An error occurred:* ${e.message || "Unknown error"}`);
   }
 });
