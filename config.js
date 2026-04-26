@@ -13,7 +13,7 @@ AUTO_STATUS_REPLY: process.env.AUTO_STATUS_REPLY || "false",
 // make true if you want auto reply on status 
 AUTO_STATUS_REACT: process.env.AUTO_STATUS_REACT || "true",
 //anticall on/off
-ANTI_CALL: process.env.ANTI_CALL === "true",
+ANTI_CALL: process.env.ANTI_CALL === "false",
 // make true if you want auto reply on status 
 AUTO_STATUS_MSG: process.env.AUTO_STATUS_MSG || "*SEEN YOUR STATUS BY TREND-X TECH 🤍*",
 // set the auto reply massage on status reply  
