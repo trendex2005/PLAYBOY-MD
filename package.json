@@ -25,6 +25,8 @@
     "btch-downloader": "^2.2.9",
     "chalk": "^4.1.2",
     "cheerio": "^1.0.0-rc.12",
+     "os": "^0.1.2",
+    "path": "^0.12.7",
     "cli-table3": "^0.6.5",
     "crypto-js": "latest",
     "express": "latest",
