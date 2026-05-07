@@ -55,10 +55,10 @@ cmd({
   fs.writeFileSync('./config.json', JSON.stringify(config, null, 2)); 
   reply(`*Prefix changed to:* ${newPrefix}`); 
   const { exec } = require("child_process"); 
-  reply("*_DATABASE UPDATE CASEYRHODES-XMD RESTARTING NOW...🚀_*"); 
+  reply("*_DATABASE UPDATE TREND-X RESTARTING NOW...🚀_*"); 
   await sleep(1500); 
   exec("pm2 restart all"); 
-  reply("*_CASEYRHODES-XMD STARTED NOW...🚀_*"); 
+  reply("*_TREND-X STARTED NOW...🚀_*"); 
 });
 
 //========mode
@@ -200,8 +200,8 @@ async (conn, mek, m, { from, args, isOwner, reply }) => {
 // AUTO_LIKE_STATUS COMMANDS
 //--------------------------------------------
 cmd({
-    pattern: "statusreact",
-    alias: ["statusreact"],
+    pattern: "autoreactstatus",
+    alias: ["reactstatus"],
     desc: "Enable or disable auto-liking of statuses",
     category: "settings",
     filename: __filename
@@ -213,10 +213,10 @@ async (conn, mek, m, { from, args, isOwner, reply }) => {
     // Default value for AUTO_STATUS_REACT is "false"
     if (args[0] === "on") {
         config.AUTO_STATUS_REACT = "true";
-        return reply("*_AUTOLIKESTATUS IS NOW ENABLED._*☑️");
+        return reply("*_AUTOREACTSTATUS IS NOW ENABLED._*☑️");
     } else if (args[0] === "off") {
         config.AUTO_STATUS_REACT = "false";
-        return reply("*_AUTOLIKESTATUS IS NOW DISABLED._*❌");
+        return reply("*_AUTOREACTSTATUS IS NOW DISABLED._*❌");
     } else {
         return reply(`Example: . status_react on`);
     }
