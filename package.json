@@ -16,7 +16,7 @@
     "@mrnima/facebook-downloader": "1.0.0",
     "@mrnima/tiktok-downloader": "1.0.0",
     "@vitalets/google-translate-api": "^9.2.0",
-    "@whiskeysockets/baileys": "npm:wileys",
+    "@whiskeysockets/baileys": "7.0.0-rc.9",
     "adm-zip": "^0.5.16",
     "ruhend-scraper": "^9.0.8",
    "@renpwn/fb-downloader": "latest",
